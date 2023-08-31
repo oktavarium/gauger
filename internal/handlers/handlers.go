@@ -30,7 +30,6 @@ func (h *Handlers) RootHandle(w http.ResponseWriter, r *http.Request) {
 	log.Println("We don't serve empty path and paths that are not update-paths.")
 	log.Println(r.URL.RequestURI())
 	w.WriteHeader(http.StatusBadRequest)
-	return
 }
 
 // parsing URL http://<АДРЕС_СЕРВЕРА>/update/<ТИП_МЕТРИКИ>/<ИМЯ_МЕТРИКИ>/<ЗНАЧЕНИЕ_МЕТРИКИ>
