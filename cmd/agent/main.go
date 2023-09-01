@@ -13,12 +13,12 @@ import (
 type metricType string
 
 const (
-	pollInterval   time.Duration = 2 * time.Second
-	reportInterval time.Duration = 10 * time.Second
-	requestMethod  string        = "POST"
-	gaugeType      metricType    = "gauge"
-	counterType    metricType    = "counter"
-	url            string        = "http://localhost:8080/update"
+	pollInterval          time.Duration = 2 * time.Second
+	reportIntervalCounter int           = 5
+	requestMethod         string        = "POST"
+	gaugeType             metricType    = "gauge"
+	counterType           metricType    = "counter"
+	url                   string        = "http://localhost:8080/update"
 )
 
 type gaugeMetrics struct {
@@ -90,7 +90,7 @@ func main() {
 func run() error {
 	metrics := NewMetrics()
 	for {
-		for i := 0; i < 5; i++ {
+		for i := 0; i < reportIntervalCounter; i++ {
 			statsReader(&metrics)
 			time.Sleep(pollInterval)
 		}
