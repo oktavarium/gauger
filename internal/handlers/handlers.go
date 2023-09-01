@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -28,7 +29,6 @@ func NewHandlers(storage storage.MetricsSaver) *Handlers {
 
 func (h *Handlers) RootHandle(w http.ResponseWriter, r *http.Request) {
 	log.Println("We don't serve empty path and paths that are not update-paths.")
-	log.Println(r.URL.RequestURI())
 	w.WriteHeader(http.StatusBadRequest)
 }
 
@@ -43,7 +43,7 @@ func (h *Handlers) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	metricType := metricType(urlParams[0])
 	metricName := urlParams[1]
 	metricValueStr := urlParams[2]
-
+	fmt.Println(urlParams, "!", urlParams[0], "!", len(urlParams), r.URL.RequestURI())
 	if metricType != gaugeType && metricType != counterType {
 		w.WriteHeader(http.StatusBadRequest)
 		return
