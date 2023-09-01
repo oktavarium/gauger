@@ -143,6 +143,7 @@ func makeRequest(client *http.Client, path string) error {
 	if err != nil {
 		return err
 	}
+	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
 		return errors.New("Response is not OK")
