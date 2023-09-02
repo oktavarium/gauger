@@ -38,7 +38,7 @@ func NewGaugerServer(addr string, storage metricsSaver) *GaugerServer {
 		storage: storage,
 	}
 	server.router.Get("/", server.getHandle)
-	server.router.Get("/update/{type}/{name}/{value}", server.updateHandle)
+	server.router.Post("/update/{type}/{name}/{value}", server.updateHandle)
 	server.router.Get("/value/{type}/{name}/", server.valueHandle)
 
 	return server
