@@ -33,9 +33,8 @@ func (h *Handlers) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	})
 
 	// wrong number of parameters
-	for len(urlParams) != 4 {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	for len(urlParams) < 4 {
+		urlParams = append(urlParams, "")
 	}
 
 	hType := urlParams[0]
@@ -56,7 +55,7 @@ func (h *Handlers) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// checking metric name
-	if len(metricName) == 0 || !h.storage.CheckMetricName(metricName) {
+	if len(metricName) == 0 {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
