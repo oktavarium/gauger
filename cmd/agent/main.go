@@ -156,7 +156,7 @@ func reportMetrics(m *metrics) error {
 	return nil
 }
 
-func makeRequest(client *http.Client, url string) error {
+func makeRequest(url string) error {
 	resp, err := http.Post(url, "", nil)
 	if err != nil {
 		return err

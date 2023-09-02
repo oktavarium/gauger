@@ -4,11 +4,16 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-
-	"github.com/oktavarium/go-gauger/internal/storage"
 )
 
 type metricType string
+
+// declare interfaces where we plan to use it
+type metricsSaver interface {
+	SaveGauge(namse string, val float64)
+	UpdateCounter(name string, val int64)
+	CheckMetricName(name string) bool
+}
 
 const (
 	gaugeType   metricType = "gauge"
@@ -17,10 +22,10 @@ const (
 )
 
 type Handlers struct {
-	storage storage.MetricsSaver
+	storage metricsSaver
 }
 
-func NewHandlers(storage storage.MetricsSaver) *Handlers {
+func NewHandlers(storage metricsSaver) *Handlers {
 	return &Handlers{
 		storage: storage,
 	}

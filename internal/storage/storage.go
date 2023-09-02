@@ -1,11 +1,5 @@
 package storage
 
-type MetricsSaver interface {
-	SaveGauge(namse string, val float64)
-	UpdateCounter(name string, val int64)
-	CheckMetricName(name string) bool
-}
-
 type Storage struct {
 	gauge   map[string]float64
 	counter map[string]int64
