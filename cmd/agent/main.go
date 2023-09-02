@@ -139,16 +139,15 @@ func statsReader(m *metrics) {
 }
 
 func reportMetrics(m *metrics) error {
-	client := &http.Client{}
 	for k, v := range m.gauges.metrics {
-		err := makeRequest(client, fmt.Sprintf("%s/%s/%s/%f", url, string(m.gauges.mType), k, v))
+		err := makeRequest(fmt.Sprintf("%s/%s/%s/%f", url, string(m.gauges.mType), k, v))
 		if err != nil {
 			return err
 		}
 	}
 
 	for k, v := range m.counters.metrics {
-		err := makeRequest(client, fmt.Sprintf("%s/%s/%s/%d", url, string(m.counters.mType), k, v))
+		err := makeRequest(fmt.Sprintf("%s/%s/%s/%d", url, string(m.counters.mType), k, v))
 		if err != nil {
 			return err
 		}
@@ -158,18 +157,14 @@ func reportMetrics(m *metrics) error {
 }
 
 func makeRequest(client *http.Client, url string) error {
-	req, err := http.NewRequest(requestMethod, url, nil)
+	resp, err := http.Post(url, "", nil)
 	if err != nil {
 		return err
 	}
 
-	res, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK {
 		return errors.New("response is not OK")
 	}
 	return nil
