@@ -2,9 +2,7 @@ package main
 
 import (
 	"log"
-	"net/http"
 
-	"github.com/oktavarium/go-gauger/internal/handlers"
 	"github.com/oktavarium/go-gauger/internal/server"
 	"github.com/oktavarium/go-gauger/internal/storage"
 )
@@ -18,11 +16,8 @@ func main() {
 }
 
 func run() error {
-	gs := server.NewGaugerServer(srvAddr)
 	storage := storage.NewStorage()
-	handlers := handlers.NewHandlers(storage)
-
-	gs.Handle(`/`, http.HandlerFunc(handlers.UpdateHandle))
+	gs := server.NewGaugerServer(srvAddr, storage)
 
 	log.Println("Server started")
 
