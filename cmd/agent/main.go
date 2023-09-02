@@ -170,7 +170,7 @@ func makeRequest(client *http.Client, url string) error {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return errors.New("Response is not OK")
+		return errors.New("response is not OK")
 	}
 	return nil
 }
