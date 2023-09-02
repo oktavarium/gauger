@@ -36,7 +36,7 @@ func TestUpdateHandle(t *testing.T) {
 		{
 			name:     "check wrong metric name",
 			handlers: NewHandlers(storage.NewStorage()),
-			url:      "/update/gauge/wrontMetricName/0.0",
+			url:      "/update/gauge/",
 			want: want{
 				code:        404,
 				response:    "",
