@@ -22,9 +22,7 @@ func run() error {
 	storage := storage.NewStorage()
 	handlers := handlers.NewHandlers(storage)
 
-	gs.Handle(`/`, http.HandlerFunc(handlers.RootHandle))
-	gs.Handle(`/update/`, http.StripPrefix(`/update/`, http.HandlerFunc(handlers.UpdateHandle)))
-	gs.Handle(`/update`, http.HandlerFunc(handlers.RootHandle))
+	gs.Handle(`/`, http.HandlerFunc(handlers.UpdateHandle))
 
 	log.Println("Server started")
 

@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,6 +13,7 @@ type metricType string
 const (
 	gaugeType   metricType = "gauge"
 	counterType metricType = "counter"
+	handleType  string     = "update"
 )
 
 type Handlers struct {
@@ -27,30 +26,44 @@ func NewHandlers(storage storage.MetricsSaver) *Handlers {
 	}
 }
 
-func (h *Handlers) RootHandle(w http.ResponseWriter, r *http.Request) {
-	log.Println("We don't serve empty path and paths that are not update-paths.")
-	w.WriteHeader(http.StatusBadRequest)
-}
-
 // parsing URL http://<АДРЕС_СЕРВЕРА>/update/<ТИП_МЕТРИКИ>/<ИМЯ_МЕТРИКИ>/<ЗНАЧЕНИЕ_МЕТРИКИ>
 func (h *Handlers) UpdateHandle(w http.ResponseWriter, r *http.Request) {
-	log.Println("We serve update path.")
-	urlParams := strings.Split(r.URL.RequestURI(), "/")
-	for len(urlParams) < 3 {
-		urlParams = append(urlParams, "")
+	urlParams := strings.FieldsFunc(r.URL.RequestURI(), func(c rune) bool {
+		return c == '/'
+	})
+
+	// wrong number of parameters
+	for len(urlParams) != 4 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
-	metricType := metricType(urlParams[0])
-	metricName := urlParams[1]
-	metricValueStr := urlParams[2]
-	fmt.Println(urlParams, "!", urlParams[0], "!", len(urlParams), r.URL.RequestURI())
+	hType := urlParams[0]
+	metricType := metricType(urlParams[1])
+	metricName := urlParams[2]
+	metricValueStr := urlParams[3]
+
+	// checking update method
+	if hType != handleType {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// checking metric type
 	if metricType != gaugeType && metricType != counterType {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if len(metricName) == 0 {
+	// checking metric name
+	if len(metricName) == 0 || !h.storage.CheckMetricName(metricName) {
 		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	// checking metric value
+	if len(metricValueStr) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
