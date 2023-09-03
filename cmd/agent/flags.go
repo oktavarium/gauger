@@ -18,6 +18,8 @@ func parseFlags() error {
 		"apoll interval in seconds")
 	flag.Parse()
 
+	flagEndpointAddr = "http://" + flagEndpointAddr
+
 	if len(flag.Args()) > 0 {
 		return errors.New("unrecognised flags")
 	}
