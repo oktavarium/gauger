@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -38,7 +39,7 @@ func (s *Storage) GetCounter(name string) (int64, bool) {
 func (s *Storage) GetAll() string {
 	var sb strings.Builder
 	for k, v := range s.gauge {
-		sb.WriteString(fmt.Sprintf("%s: %.1f\n", k, v))
+		sb.WriteString(fmt.Sprintf("%s: %s\n", k, strconv.FormatFloat(v, 'f', -1, 64)))
 	}
 	for k, v := range s.counter {
 		sb.WriteString(fmt.Sprintf("%s: %d\n", k, v))
