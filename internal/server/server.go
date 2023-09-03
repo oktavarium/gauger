@@ -118,7 +118,7 @@ func (g *GaugerServer) valueHandle(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		valStr := strconv.FormatFloat(val, 'f', -1, 64)
+		valStr := strconv.FormatFloat(val, 'f', 1, 64)
 		w.Write([]byte(valStr))
 	} else {
 		val, ok := g.storage.GetCounter(metricName)

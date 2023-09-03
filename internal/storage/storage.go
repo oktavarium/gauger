@@ -38,10 +38,10 @@ func (s *Storage) GetCounter(name string) (int64, bool) {
 func (s *Storage) GetAll() string {
 	var sb strings.Builder
 	for k, v := range s.gauge {
-		sb.WriteString(fmt.Sprintf("%q: %f\n", k, v))
+		sb.WriteString(fmt.Sprintf("%s: %.1f\n", k, v))
 	}
 	for k, v := range s.counter {
-		sb.WriteString(fmt.Sprintf("%q: %d\n", k, v))
+		sb.WriteString(fmt.Sprintf("%s: %d\n", k, v))
 	}
 	return sb.String()
 }
