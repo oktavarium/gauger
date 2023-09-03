@@ -39,7 +39,7 @@ func NewGaugerServer(addr string, storage metricsSaver) *GaugerServer {
 	}
 	server.router.Get("/", server.getHandle)
 	server.router.Post("/update/{type}/{name}/{value}", server.updateHandle)
-	server.router.Get("/value/{type}/{name}/", server.valueHandle)
+	server.router.Get("/value/{type}/{name}", server.valueHandle)
 
 	return server
 }
@@ -51,7 +51,6 @@ func (g *GaugerServer) ListenAndServe() error {
 func (g *GaugerServer) getHandle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain")
 	w.Write([]byte(g.storage.GetAll()))
-	w.WriteHeader(http.StatusOK)
 }
 
 func (g *GaugerServer) updateHandle(w http.ResponseWriter, r *http.Request) {
@@ -130,6 +129,4 @@ func (g *GaugerServer) valueHandle(w http.ResponseWriter, r *http.Request) {
 		valStr := strconv.FormatInt(val, 10)
 		w.Write([]byte(valStr))
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
