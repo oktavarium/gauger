@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
+	"sync"
 	"time"
 
 	"golang.org/x/exp/rand"
@@ -12,13 +13,13 @@ import (
 
 type metricType string
 
+var mutex sync.Mutex
+
 const (
-	pollInterval          time.Duration = 2 * time.Second
-	reportIntervalCounter int           = 5
-	requestMethod         string        = "POST"
-	gaugeType             metricType    = "gauge"
-	counterType           metricType    = "counter"
-	url                   string        = "http://localhost:8080/update"
+	requestMethod string     = "POST"
+	gaugeType     metricType = "gauge"
+	counterType   metricType = "counter"
+	updatePath    string     = "/update"
 )
 
 type gaugeMetrics struct {
@@ -81,26 +82,55 @@ func NewMetrics() metrics {
 }
 
 func main() {
-	fmt.Println("Agent started")
 	if err := run(); err != nil {
 		panic(err)
 	}
 }
 
 func run() error {
-	metrics := NewMetrics()
-	for {
-		for i := 0; i < reportIntervalCounter; i++ {
-			statsReader(&metrics)
-			time.Sleep(pollInterval)
-		}
-		if err := reportMetrics(&metrics); err != nil {
-			return err
-		}
+	quit := make(chan struct{})
+	err := parseFlags()
+	if err != nil {
+		return err
 	}
+
+	metrics := NewMetrics()
+	pollTicker := time.NewTicker(time.Duration(flagPollInterval))
+	reportTicker := time.NewTicker(time.Duration(flagReportInterval))
+	go func() {
+		for {
+			select {
+			case <-pollTicker.C:
+				statsReader(&metrics)
+			case <-quit:
+				pollTicker.Stop()
+				return
+
+			}
+		}
+	}()
+	go func() {
+		for {
+			select {
+			case <-reportTicker.C:
+				if err := reportMetrics(&metrics); err != nil {
+					panic(err)
+				}
+			case <-quit:
+				reportTicker.Stop()
+				return
+
+			}
+		}
+	}()
+	<-quit
+	return nil
 }
 
 func statsReader(m *metrics) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 
@@ -139,15 +169,18 @@ func statsReader(m *metrics) {
 }
 
 func reportMetrics(m *metrics) error {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	for k, v := range m.gauges.metrics {
-		err := makeRequest(fmt.Sprintf("%s/%s/%s/%f", url, string(m.gauges.mType), k, v))
+		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%f", flagEndpointAddr, string(m.gauges.mType), k, v))
 		if err != nil {
 			return err
 		}
 	}
 
 	for k, v := range m.counters.metrics {
-		err := makeRequest(fmt.Sprintf("%s/%s/%s/%d", url, string(m.counters.mType), k, v))
+		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%d", flagEndpointAddr, string(m.counters.mType), k, v))
 		if err != nil {
 			return err
 		}
@@ -156,8 +189,8 @@ func reportMetrics(m *metrics) error {
 	return nil
 }
 
-func makeRequest(url string) error {
-	resp, err := http.Post(url, "", nil)
+func makeUpdateRequest(endpoint string) error {
+	resp, err := http.Post(endpoint+updatePath, "", nil)
 	if err != nil {
 		return err
 	}
