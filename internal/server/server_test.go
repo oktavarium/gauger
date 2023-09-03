@@ -40,12 +40,12 @@ func TestRouter(t *testing.T) {
 		{"POST", "/update/gauge/alloc/4.0", "", 200},
 		{"POST", "/update/counter/pollscounter/1", "", 200},
 		{"POST", "/update/counter/pollscounter/f", "", 400},
-		{"GET", "/value/gauge/alloc", "4.0", 200},
+		{"GET", "/value/gauge/alloc", "4", 200},
 		{"GET", "/value/counter/pollscounter", "1", 200},
 		{"GET", "/value/counter/wrong", "", 404},
 		{"GET", "/value/wrongtype/wrong", "", 400},
 		{"POST", "/value/counter/pollscounter", "", 405},
-		{"GET", "/", "alloc: 4.0\npollscounter: 1\n", 200},
+		{"GET", "/", "alloc: 4\npollscounter: 1\n", 200},
 	}
 
 	for _, test := range tests {
