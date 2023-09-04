@@ -49,11 +49,12 @@ func (g *GaugerServer) ListenAndServe() error {
 }
 
 func (g *GaugerServer) getHandle(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Write([]byte(g.storage.GetAll()))
 }
 
 func (g *GaugerServer) updateHandle(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	metricType := metricType(strings.ToLower(chi.URLParam(r, "type")))
 	metricName := strings.ToLower(chi.URLParam(r, "name"))
 	metricValueStr := chi.URLParam(r, "value")

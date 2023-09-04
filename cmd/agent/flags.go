@@ -8,19 +8,19 @@ import (
 )
 
 type config struct {
-	flagEndpointAddr   string `env:"ADDRESS"`
-	flagReportInterval int    `env:"REPORT_INTERVAL"`
-	flagPollInterval   int    `env:"POLL_INTERVAL"`
+	Address         string `env:"ADDRESS"`
+	Report_interval int    `env:"REPORT_INTERVAL"`
+	Poll_interval   int    `env:"POLL_INTERVAL"`
 }
 
 var flagsConfig config
 
 func parseFlags() error {
-	flag.StringVar(&flagsConfig.flagEndpointAddr, "a", "localhost:8080",
+	flag.StringVar(&flagsConfig.Address, "a", "localhost:8080",
 		"address and port of server's endpoint in notaion address:port")
-	flag.IntVar(&flagsConfig.flagReportInterval, "r", 10,
+	flag.IntVar(&flagsConfig.Report_interval, "r", 10,
 		"report interval in seconds")
-	flag.IntVar(&flagsConfig.flagPollInterval, "p", 2,
+	flag.IntVar(&flagsConfig.Poll_interval, "p", 2,
 		"apoll interval in seconds")
 	flag.Parse()
 
@@ -32,7 +32,7 @@ func parseFlags() error {
 		return errors.New("unrecognised flags")
 	}
 
-	flagsConfig.flagEndpointAddr = "http://" + flagsConfig.flagEndpointAddr
+	flagsConfig.Address = "http://" + flagsConfig.Address
 
 	return nil
 }

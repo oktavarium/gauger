@@ -95,10 +95,10 @@ func run() error {
 	for {
 		time.Sleep(1 * time.Second)
 		sleepCounter++
-		if sleepCounter%flagsConfig.flagPollInterval == 0 {
+		if sleepCounter%flagsConfig.Poll_interval == 0 {
 			statsReader(&metrics)
 		}
-		if sleepCounter%flagsConfig.flagReportInterval == 0 {
+		if sleepCounter%flagsConfig.Report_interval == 0 {
 			if err := reportMetrics(&metrics); err != nil {
 				panic(err)
 			}
@@ -146,7 +146,7 @@ func statsReader(m *metrics) {
 
 func reportMetrics(m *metrics) error {
 	for k, v := range m.gauges.metrics {
-		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%s/%f", flagsConfig.flagEndpointAddr, updatePath,
+		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%s/%f", flagsConfig.Address, updatePath,
 			string(m.gauges.mType), k, v))
 		if err != nil {
 			return err
@@ -154,7 +154,7 @@ func reportMetrics(m *metrics) error {
 	}
 
 	for k, v := range m.counters.metrics {
-		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%s/%d", flagsConfig.flagEndpointAddr, updatePath,
+		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%s/%d", flagsConfig.Address, updatePath,
 			string(m.counters.mType), k, v))
 		if err != nil {
 			return err
@@ -165,7 +165,7 @@ func reportMetrics(m *metrics) error {
 }
 
 func makeUpdateRequest(endpoint string) error {
-	resp, err := http.Post(endpoint, "", nil)
+	resp, err := http.Post(endpoint, "text/plain", nil)
 	if err != nil {
 		return err
 	}
