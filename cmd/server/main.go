@@ -20,9 +20,9 @@ func run() error {
 	}
 
 	storage := storage.NewStorage()
-	gs := server.NewGaugerServer(flagRunAddr, storage)
+	gs := server.NewGaugerServer(flagsConfig.flagRunAddr, storage)
 
-	fmt.Println("Running server on", flagRunAddr)
+	fmt.Println("Running server on", flagsConfig.flagRunAddr)
 
 	return gs.ListenAndServe()
 }
