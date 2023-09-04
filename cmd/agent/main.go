@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"runtime"
 	"time"
@@ -166,7 +167,7 @@ func reportMetrics(m *metrics) error {
 
 func makeUpdateRequest(endpoint string) error {
 	resp, err := http.Post(endpoint, "text/plain", nil)
-	if err != nil {
+	if err != nil && err != io.EOF {
 		return err
 	}
 
