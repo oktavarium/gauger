@@ -16,10 +16,6 @@ type config struct {
 var flagsConfig config
 
 func parseFlags() error {
-	if len(flag.Args()) > 0 {
-		return errors.New("unrecognised flags")
-	}
-
 	flag.StringVar(&flagsConfig.flagEndpointAddr, "a", "localhost:8080",
 		"address and port of server's endpoint in notaion address:port")
 	flag.IntVar(&flagsConfig.flagReportInterval, "r", 10,
@@ -30,6 +26,10 @@ func parseFlags() error {
 
 	if err := env.Parse(&flagsConfig); err != nil {
 		return err
+	}
+
+	if len(flag.Args()) > 0 {
+		return errors.New("unrecognised flags")
 	}
 
 	flagsConfig.flagEndpointAddr = "http://" + flagsConfig.flagEndpointAddr
