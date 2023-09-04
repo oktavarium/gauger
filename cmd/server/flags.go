@@ -3,9 +3,14 @@ package main
 import (
 	"errors"
 	"flag"
+	"os"
 )
 
 var flagRunAddr string
+
+const (
+	envRunAddrName string = "ADDRESS"
+)
 
 func parseFlags() error {
 	flag.StringVar(&flagRunAddr, "a", "localhost:8080",
@@ -15,5 +20,11 @@ func parseFlags() error {
 	if len(flag.Args()) > 0 {
 		return errors.New("unrecognised flags")
 	}
+
+	envRunAddr := os.Getenv(envRunAddrName)
+	if len(envRunAddr) != 0 {
+		flagRunAddr = envRunAddrName
+	}
+
 	return nil
 }
