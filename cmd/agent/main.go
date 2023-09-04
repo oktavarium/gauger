@@ -95,10 +95,10 @@ func run() error {
 	for {
 		time.Sleep(1 * time.Second)
 		sleepCounter++
-		if sleepCounter%flagsConfig.Poll_interval == 0 {
+		if sleepCounter%flagsConfig.PollInterval == 0 {
 			statsReader(&metrics)
 		}
-		if sleepCounter%flagsConfig.Report_interval == 0 {
+		if sleepCounter%flagsConfig.ReportInterval == 0 {
 			if err := reportMetrics(&metrics); err != nil {
 				panic(err)
 			}

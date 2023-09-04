@@ -8,9 +8,9 @@ import (
 )
 
 type config struct {
-	Address         string `env:"ADDRESS"`
-	Report_interval int    `env:"REPORT_INTERVAL"`
-	Poll_interval   int    `env:"POLL_INTERVAL"`
+	Address        string `env:"ADDRESS"`
+	ReportInterval int    `env:"REPORT_INTERVAL"`
+	PollInterval   int    `env:"POLL_INTERVAL"`
 }
 
 var flagsConfig config
@@ -18,9 +18,9 @@ var flagsConfig config
 func parseFlags() error {
 	flag.StringVar(&flagsConfig.Address, "a", "localhost:8080",
 		"address and port of server's endpoint in notaion address:port")
-	flag.IntVar(&flagsConfig.Report_interval, "r", 10,
+	flag.IntVar(&flagsConfig.ReportInterval, "r", 10,
 		"report interval in seconds")
-	flag.IntVar(&flagsConfig.Poll_interval, "p", 2,
+	flag.IntVar(&flagsConfig.PollInterval, "p", 2,
 		"apoll interval in seconds")
 	flag.Parse()
 

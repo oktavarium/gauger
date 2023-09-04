@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 
-	"github.com/caarlos0/env/v9"
+	"github.com/caarlos0/env/v6"
 )
 
 type config struct {
