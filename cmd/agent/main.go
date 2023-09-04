@@ -146,7 +146,7 @@ func statsReader(m *metrics) {
 
 func reportMetrics(m *metrics) error {
 	for k, v := range m.gauges.metrics {
-		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%f", flagEndpointAddr+updatePath,
+		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%s/%f", flagEndpointAddr, updatePath,
 			string(m.gauges.mType), k, v))
 		if err != nil {
 			return err
@@ -154,7 +154,7 @@ func reportMetrics(m *metrics) error {
 	}
 
 	for k, v := range m.counters.metrics {
-		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%d", flagEndpointAddr+updatePath,
+		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%s/%d", flagEndpointAddr, updatePath,
 			string(m.counters.mType), k, v))
 		if err != nil {
 			return err
