@@ -27,7 +27,7 @@ func parseFlags() error {
 
 	envRunAddr := os.Getenv(envRunAddrName)
 	if len(envRunAddr) != 0 {
-		flagRunAddr = envRunAddrName
+		flagRunAddr = envRunAddr
 	}
 
 	return nil
