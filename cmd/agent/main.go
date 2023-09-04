@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
-	"sync"
 	"time"
 
 	"golang.org/x/exp/rand"
@@ -13,13 +12,11 @@ import (
 
 type metricType string
 
-var mutex sync.Mutex
-
 const (
 	requestMethod string     = "POST"
 	gaugeType     metricType = "gauge"
 	counterType   metricType = "counter"
-	updatePath    string     = "/update"
+	updatePath    string     = "update"
 )
 
 type gaugeMetrics struct {
@@ -88,49 +85,28 @@ func main() {
 }
 
 func run() error {
-	quit := make(chan struct{})
 	err := parseFlags()
 	if err != nil {
 		return err
 	}
 
 	metrics := NewMetrics()
-	pollTicker := time.NewTicker(time.Duration(flagPollInterval))
-	reportTicker := time.NewTicker(time.Duration(flagReportInterval))
-	go func() {
-		for {
-			select {
-			case <-pollTicker.C:
-				statsReader(&metrics)
-			case <-quit:
-				pollTicker.Stop()
-				return
-
+	var sleepCounter int
+	for {
+		time.Sleep(1 * time.Second)
+		sleepCounter++
+		if sleepCounter/flagPollInterval == 0 {
+			statsReader(&metrics)
+		}
+		if sleepCounter/flagReportInterval == 0 {
+			if err := reportMetrics(&metrics); err != nil {
+				panic(err)
 			}
 		}
-	}()
-	go func() {
-		for {
-			select {
-			case <-reportTicker.C:
-				if err := reportMetrics(&metrics); err != nil {
-					panic(err)
-				}
-			case <-quit:
-				reportTicker.Stop()
-				return
-
-			}
-		}
-	}()
-	<-quit
-	return nil
+	}
 }
 
 func statsReader(m *metrics) {
-	mutex.Lock()
-	defer mutex.Unlock()
-
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 
@@ -169,18 +145,17 @@ func statsReader(m *metrics) {
 }
 
 func reportMetrics(m *metrics) error {
-	mutex.Lock()
-	defer mutex.Unlock()
-
 	for k, v := range m.gauges.metrics {
-		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%f", flagEndpointAddr, string(m.gauges.mType), k, v))
+		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%f", flagEndpointAddr+updatePath,
+			string(m.gauges.mType), k, v))
 		if err != nil {
 			return err
 		}
 	}
 
 	for k, v := range m.counters.metrics {
-		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%d", flagEndpointAddr, string(m.counters.mType), k, v))
+		err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%d", flagEndpointAddr+updatePath,
+			string(m.counters.mType), k, v))
 		if err != nil {
 			return err
 		}
@@ -190,7 +165,7 @@ func reportMetrics(m *metrics) error {
 }
 
 func makeUpdateRequest(endpoint string) error {
-	resp, err := http.Post(endpoint+updatePath, "", nil)
+	resp, err := http.Post(endpoint, "", nil)
 	if err != nil {
 		return err
 	}
