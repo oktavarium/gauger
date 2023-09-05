@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/oktavarium/go-gauger/internal/handlers"
 	"github.com/oktavarium/go-gauger/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -27,7 +28,7 @@ func testRequest(t *testing.T, ts *httptest.Server,
 }
 
 func TestRouter(t *testing.T) {
-	server := NewGaugerServer("localgost", storage.NewStorage())
+	server := NewGaugerServer("localhost", handlers.NewHandler(storage.NewStorage()))
 	ts := httptest.NewServer(server.router)
 	defer ts.Close()
 
@@ -38,6 +39,7 @@ func TestRouter(t *testing.T) {
 		status int
 	}{
 		{"POST", "/update/gauge/alloc/4.0", "", 200},
+		{"POST", "/wrongMethod/gauge/alloc/4.0", "404 page not found\n", 404},
 		{"POST", "/update/counter/pollscounter/1", "", 200},
 		{"POST", "/update/counter/pollscounter/f", "", 400},
 		{"GET", "/value/gauge/alloc", "4", 200},
