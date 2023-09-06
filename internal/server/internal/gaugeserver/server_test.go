@@ -6,8 +6,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/oktavarium/go-gauger/internal/handlers"
-	"github.com/oktavarium/go-gauger/internal/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -28,7 +26,7 @@ func testRequest(t *testing.T, ts *httptest.Server,
 }
 
 func TestRouter(t *testing.T) {
-	server := NewGaugerServer("localhost", handlers.NewHandler(storage.NewStorage()))
+	server := NewGaugerServer("localhost")
 	ts := httptest.NewServer(server.router)
 	defer ts.Close()
 

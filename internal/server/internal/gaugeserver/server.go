@@ -5,7 +5,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/oktavarium/go-gauger/internal/handlers"
+	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/handlers"
+	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage"
 )
 
 type GaugerServer struct {
@@ -13,11 +14,14 @@ type GaugerServer struct {
 	addr   string
 }
 
-func NewGaugerServer(addr string, handler *handlers.Handler) *GaugerServer {
+func NewGaugerServer(addr string) *GaugerServer {
 	server := &GaugerServer{
 		router: chi.NewRouter(),
 		addr:   addr,
 	}
+	storage := storage.NewStorage()
+	handler := handlers.NewHandler(storage)
+
 	server.router.Use(middleware.Logger)
 	server.router.Get("/", handler.GetHandle)
 	server.router.Post("/update/{type}/{name}/{value}", handler.UpdateHandle)

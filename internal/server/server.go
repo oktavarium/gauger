@@ -3,9 +3,7 @@ package server
 import (
 	"fmt"
 
-	"github.com/oktavarium/go-gauger/internal/gaugeserver"
-	"github.com/oktavarium/go-gauger/internal/handlers"
-	"github.com/oktavarium/go-gauger/internal/storage"
+	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver"
 )
 
 func Run() error {
@@ -14,9 +12,7 @@ func Run() error {
 		return fmt.Errorf("error on loading config: %w", err)
 	}
 
-	storage := storage.NewStorage()
-	handler := handlers.NewHandler(storage)
-	gs := gaugeserver.NewGaugerServer(flagsConfig.Address, handler)
+	gs := gaugeserver.NewGaugerServer(flagsConfig.Address)
 
 	return gs.ListenAndServe()
 }
