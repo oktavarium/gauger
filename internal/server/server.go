@@ -1,29 +1,22 @@
 package server
 
 import (
-	"net/http"
+	"fmt"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/oktavarium/go-gauger/internal/gaugeserver"
 	"github.com/oktavarium/go-gauger/internal/handlers"
+	"github.com/oktavarium/go-gauger/internal/storage"
 )
 
-type GaugerServer struct {
-	router *chi.Mux
-	addr   string
-}
-
-func NewGaugerServer(addr string, handler *handlers.Handler) *GaugerServer {
-	server := &GaugerServer{
-		router: chi.NewRouter(),
-		addr:   addr,
+func Run() error {
+	flagsConfig, err := parseFlags()
+	if err != nil {
+		return fmt.Errorf("error on parsing flags: %w", err)
 	}
-	server.router.Get("/", handler.GetHandle)
-	server.router.Post("/update/{type}/{name}/{value}", handler.UpdateHandle)
-	server.router.Get("/value/{type}/{name}", handler.ValueHandle)
 
-	return server
-}
+	storage := storage.NewStorage()
+	handler := handlers.NewHandler(storage)
+	gs := gaugeserver.NewGaugerServer(flagsConfig.Address, handler)
 
-func (g *GaugerServer) ListenAndServe() error {
-	return http.ListenAndServe(g.addr, g.router)
+	return gs.ListenAndServe()
 }

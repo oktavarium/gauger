@@ -9,7 +9,7 @@ func TestSaveGauge(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		storage *Storage
+		storage Storage
 		metrics metrics
 		ok      bool
 		want    float64
@@ -28,7 +28,7 @@ func TestSaveGauge(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			test.storage.SaveGauge(test.metrics.name, test.metrics.val)
-			val, ok := test.storage.gauge[test.metrics.name]
+			val, ok := test.storage.GetGauger(test.metrics.name)
 			if ok != test.ok {
 				t.Errorf("Want: %T, got: %T", test.ok, ok)
 			}
@@ -73,7 +73,7 @@ func TestUpdateCounter(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			storage.UpdateCounter(test.metrics.name, test.metrics.val)
-			val, ok := storage.counter[test.metrics.name]
+			val, ok := storage.GetCounter(test.metrics.name)
 			if ok != test.ok {
 				t.Errorf("Want: %T, got: %T", test.ok, ok)
 			}
