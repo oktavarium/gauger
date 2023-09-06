@@ -9,9 +9,9 @@ import (
 )
 
 func Run() error {
-	flagsConfig, err := parseFlags()
+	flagsConfig, err := loadConfig()
 	if err != nil {
-		return fmt.Errorf("error on parsing flags: %w", err)
+		return fmt.Errorf("error on loading config: %w", err)
 	}
 
 	storage := storage.NewStorage()
