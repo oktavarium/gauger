@@ -1,22 +1,28 @@
 package agent
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
 	"net/http"
 	"runtime"
+
+	"github.com/oktavarium/go-gauger/internal/models"
 )
+
+const updatePath string = "update"
 
 func NewMetrics() metrics {
 	return metrics{
 		gauges: gaugeMetrics{
 			metrics: make(map[string]float64),
-			mType:   gaugeType,
+			mType:   models.GaugeType,
 		},
 		counters: counterMetrics{
 			metrics: make(map[string]int64),
-			mType:   counterType,
+			mType:   models.CounterType,
 		},
 	}
 }
@@ -53,23 +59,31 @@ func readMetrics(m *metrics) {
 	m.gauges.metrics["NumForcedGC"] = float64(memStats.NumForcedGC)
 	m.gauges.metrics["GCCPUFraction"] = float64(memStats.GCCPUFraction)
 	m.gauges.metrics["RandomValue"] = rand.Float64()
-	m.gauges.mType = gaugeType
+	m.gauges.mType = models.GaugeType
 
 	m.counters.metrics["PollCount"]++
-	m.counters.mType = counterType
+	m.counters.mType = models.CounterType
 }
 
 func reportMetrics(address string, m *metrics) error {
+	var metrics models.Metrics
 	for k, v := range m.gauges.metrics {
-		if err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%s/%f", address, updatePath,
-			string(m.gauges.mType), k, v)); err != nil {
+		metrics.ID = k
+		metrics.MType = string(models.GaugeType)
+		metrics.Value = &v
+		if err := makeUpdateRequest(fmt.Sprintf("%s/%s/", address, updatePath),
+			metrics); err != nil {
 			return fmt.Errorf("error on making update request: %w", err)
 		}
 	}
 
+	metrics.Value = nil
 	for k, v := range m.counters.metrics {
-		if err := makeUpdateRequest(fmt.Sprintf("%s/%s/%s/%s/%d", address, updatePath,
-			string(m.counters.mType), k, v)); err != nil {
+		metrics.ID = k
+		metrics.MType = string(models.GaugeType)
+		metrics.Delta = &v
+		if err := makeUpdateRequest(fmt.Sprintf("%s/%s/", address, updatePath),
+			metrics); err != nil {
 			return fmt.Errorf("error on making update request: %w", err)
 		}
 	}
@@ -77,16 +91,27 @@ func reportMetrics(address string, m *metrics) error {
 	return nil
 }
 
-func makeUpdateRequest(endpoint string) error {
-	resp, err := http.Post(endpoint, "text/plain", nil)
+func makeUpdateRequest(endpoint string, metrics models.Metrics) error {
+	var body bytes.Buffer
+	encoder := json.NewEncoder(&body)
+	err := encoder.Encode(metrics)
+	if err != nil {
+		return fmt.Errorf("error on encoding data: %w", err)
+	}
+
+	resp, err := http.Post(endpoint, "application/json", &body)
 	if err != nil {
 		return fmt.Errorf("error on making post request: %w", err)
 	}
 
+	var metricsResponse models.Metrics
+	decoder := json.NewDecoder(resp.Body)
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return errors.New("response status code is not OK (200)")
 	}
+	decoder.Decode(&metricsResponse)
+	fmt.Println(metricsResponse)
 	return nil
 }
