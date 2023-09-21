@@ -24,8 +24,10 @@ func NewGaugerServer(addr string) *GaugerServer {
 
 	server.router.Use(middleware.Logger)
 	server.router.Get("/", handler.GetHandle)
-	server.router.Post("/update", handler.UpdateHandle)
-	server.router.Get("/value", handler.ValueHandle)
+	server.router.Post("/update/", handler.UpdateJSONHandle)
+	server.router.Get("/value/", handler.ValueJSONHandle)
+	server.router.Post("/update/{type}/{name}/{value}", handler.UpdateHandle)
+	server.router.Get("/value/{type}/{name}", handler.ValueHandle)
 
 	return server
 }
