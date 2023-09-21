@@ -15,6 +15,10 @@ const (
 	counterType metricType
 )
 
+func (gaugerType) String() string {
+	return "gauger"
+}
+
 type metricValue struct {
 	mType metricType
 	mName string
