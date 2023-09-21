@@ -8,23 +8,6 @@ import (
 	"runtime"
 )
 
-type metricType int
-
-const (
-	gaugerType  metricType = iota
-	counterType metricType
-)
-
-func (gaugerType) String() string {
-	return "gauger"
-}
-
-type metricValue struct {
-	mType metricType
-	mName string
-	value value
-}
-
 func NewMetrics() metrics {
 	return metrics{
 		gauges: gaugeMetrics{
