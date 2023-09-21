@@ -39,6 +39,8 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		valStr := strconv.FormatInt(val, 10)
+
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(valStr))
 	}
 }
