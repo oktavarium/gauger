@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/handlers"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage"
+	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
 )
 
 type GaugerServer struct {
@@ -22,7 +22,7 @@ func NewGaugerServer(addr string) *GaugerServer {
 	storage := storage.NewStorage()
 	handler := handlers.NewHandler(storage)
 
-	server.router.Use(middleware.Logger)
+	server.router.Use(logger.LoggerMiddleware)
 	server.router.Get("/", handler.GetHandle)
 	server.router.Post("/update/", handler.UpdateJSONHandle)
 	server.router.Get("/value/", handler.ValueJSONHandle)

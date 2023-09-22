@@ -6,16 +6,17 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/oktavarium/go-gauger/internal/models"
 )
 
 func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	metricType := models.MetricType(strings.ToLower(chi.URLParam(r, "type")))
 	metricName := strings.ToLower(chi.URLParam(r, "name"))
 
 	// checking metric type
-	if models.MetricType(metricType) != models.GaugeType && models.MetricType(metricType) != models.CounterType {
+	if metricType != models.GaugeType && metricType != models.CounterType {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -26,13 +27,14 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if models.MetricType(metricType) != models.GaugeType {
+	if metricType == models.GaugeType {
 		val, ok := h.storage.GetGauger(metricName)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		valStr := strconv.FormatFloat(val, 'f', -1, 64)
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(valStr))
 	} else {
 		val, ok := h.storage.GetCounter(metricName)

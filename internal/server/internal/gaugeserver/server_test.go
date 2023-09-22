@@ -31,27 +31,28 @@ func TestRouter(t *testing.T) {
 	defer ts.Close()
 
 	tests := []struct {
+		name   string
 		method string
 		url    string
 		want   string
 		status int
 	}{
-		{"POST", "/update/gauge/alloc/4.0", "", 200},
-		{"POST", "/wrongMethod/gauge/alloc/4.0", "404 page not found\n", 404},
-		{"POST", "/update/counter/pollscounter/1", "", 200},
-		{"POST", "/update/counter/pollscounter/f", "", 400},
-		{"GET", "/value/gauge/alloc", "4", 200},
-		{"GET", "/value/counter/pollscounter", "1", 200},
-		{"GET", "/value/counter/wrong", "", 404},
-		{"GET", "/value/wrongtype/wrong", "", 400},
-		{"POST", "/value/counter/pollscounter", "", 405},
-		{"GET", "/", "alloc: 4\npollscounter: 1\n", 200},
+		{"simple test 1", "POST", "/update/gauge/alloc/4.0", "", 200},
+		{"simple test 2", "POST", "/wrongMethod/gauge/alloc/4.0", "404 page not found\n", 404},
+		{"simple test 3", "POST", "/update/counter/pollscounter/1", "", 200},
+		{"simple test 4", "POST", "/update/counter/pollscounter/f", "", 400},
+		{"simple test 5", "GET", "/value/gauge/alloc", "4", 200},
+		{"simple test 6", "GET", "/value/counter/pollscounter", "1", 200},
+		{"simple test 7", "GET", "/value/counter/wrong", "", 404},
+		{"simple test 8", "GET", "/value/wrongtype/wrong", "", 400},
+		{"simple test 9", "POST", "/value/counter/pollscounter", "", 405},
+		{"simple test 10", "GET", "/", "alloc: 4\npollscounter: 1\n", 200},
 	}
 
 	for _, test := range tests {
 		resp, get := testRequest(t, ts, test.method, test.url)
 		defer resp.Body.Close()
-		assert.Equal(t, test.status, resp.StatusCode)
-		assert.Equal(t, test.want, get)
+		assert.Equal(t, test.status, resp.StatusCode, test.name)
+		assert.Equal(t, test.want, get, test.name)
 	}
 }

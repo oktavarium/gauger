@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,9 +16,9 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	metricType := models.MetricType(strings.ToLower(chi.URLParam(r, "type")))
 	metricName := strings.ToLower(chi.URLParam(r, "name"))
 	metricValueStr := chi.URLParam(r, "value")
-
+	fmt.Println("!!!", metricName)
 	// checking metric type
-	if models.MetricType(metricType) != models.GaugeType && models.MetricType(metricType) != models.CounterType {
+	if metricType != models.GaugeType && metricType != models.CounterType {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -34,7 +35,7 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if models.MetricType(metricType) == models.GaugeType {
+	if metricType == models.GaugeType {
 		val, err := strconv.ParseFloat(metricValueStr, 64)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)

@@ -9,13 +9,16 @@ import (
 )
 
 type config struct {
-	Address string `env:"ADDRESS"`
+	Address  string `env:"ADDRESS"`
+	LogLevel string `env:"LOGLEVEL"`
 }
 
 func loadConfig() (config, error) {
 	var flagsConfig config
 	flag.StringVar(&flagsConfig.Address, "a", "localhost:8080",
 		"address and port of server in notaion address:port")
+	flag.StringVar(&flagsConfig.LogLevel, "l", "info",
+		"log level")
 	flag.Parse()
 
 	if err := env.Parse(&flagsConfig); err != nil {
