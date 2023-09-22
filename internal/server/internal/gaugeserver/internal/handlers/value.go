@@ -76,11 +76,11 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if models.MetricType(metrics.MType) == models.GaugeType {
-		val, _ := h.storage.GetGauger(metrics.ID)
-		// if !ok {
-		// 	w.WriteHeader(http.StatusNotFound)
-		// 	return
-		// }
+		val, ok := h.storage.GetGauger(metrics.ID)
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		metrics.Value = &val
 		encoder := json.NewEncoder(w)
 		err := encoder.Encode(&metrics)
@@ -89,11 +89,11 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		val, _ := h.storage.GetCounter(metrics.ID)
-		// if !ok {
-		// 	w.WriteHeader(http.StatusNotFound)
-		// 	return
-		// }
+		val, ok := h.storage.GetCounter(metrics.ID)
+		if !ok {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		metrics.Delta = &val
 		encoder := json.NewEncoder(w)
 		err := encoder.Encode(&metrics)
