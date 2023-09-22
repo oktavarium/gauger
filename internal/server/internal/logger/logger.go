@@ -31,8 +31,8 @@ func (lrw *loggedResponseWriter) Write(body []byte) (int, error) {
 }
 
 func (lrw *loggedResponseWriter) WriteHeader(statusCode int) {
-	lrw.w.WriteHeader(statusCode)
 	lrw.i.status = statusCode
+	lrw.w.WriteHeader(statusCode)
 }
 
 func Logger() *zap.Logger {
@@ -64,7 +64,7 @@ func LoggerMiddleware(h http.Handler) http.Handler {
 
 		loggerRW := loggedResponseWriter{
 			w: w,
-			i: &info{},
+			i: &info{status: http.StatusOK},
 		}
 
 		h.ServeHTTP(&loggerRW, r)

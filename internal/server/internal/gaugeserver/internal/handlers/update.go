@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,7 +15,7 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	metricType := models.MetricType(strings.ToLower(chi.URLParam(r, "type")))
 	metricName := strings.ToLower(chi.URLParam(r, "name"))
 	metricValueStr := chi.URLParam(r, "value")
-	fmt.Println("!!!", metricName)
+
 	// checking metric type
 	if metricType != models.GaugeType && metricType != models.CounterType {
 		w.WriteHeader(http.StatusBadRequest)
@@ -56,10 +55,11 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
-	// if w.Header().Get("Content-Type") != "application/json" {
-	// 	w.WriteHeader(http.StatusUnsupportedMediaType)
-	// 	return
-	// }
+	w.Header().Set("Content-Type", "application/json")
+	if r.Header.Get("Content-Type") != "application/json" {
+		w.WriteHeader(http.StatusUnsupportedMediaType)
+		return
+	}
 
 	var metrics models.Metrics
 	decoder := json.NewDecoder(r.Body)
@@ -92,6 +92,8 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		h.storage.UpdateCounter(metrics.ID, *metrics.Delta)
+		val, _ := h.storage.GetCounter(metrics.ID)
+		metrics.Delta = &val
 		encoder := json.NewEncoder(w)
 		err := encoder.Encode(&metrics)
 		if err != nil {
@@ -99,6 +101,4 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	w.WriteHeader(http.StatusOK)
 }

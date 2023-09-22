@@ -50,7 +50,8 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
-	if w.Header().Get("Content-Type") != "application/json" {
+	w.Header().Set("Content-Type", "application/json")
+	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}
@@ -62,7 +63,6 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
 	// checking metric type
 	if models.MetricType(metrics.MType) != models.GaugeType && models.MetricType(metrics.MType) != models.CounterType {
 		w.WriteHeader(http.StatusBadRequest)
@@ -76,11 +76,11 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if models.MetricType(metrics.MType) == models.GaugeType {
-		val, ok := h.storage.GetGauger(metrics.ID)
-		if !ok {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
+		val, _ := h.storage.GetGauger(metrics.ID)
+		// if !ok {
+		// 	w.WriteHeader(http.StatusNotFound)
+		// 	return
+		// }
 		metrics.Value = &val
 		encoder := json.NewEncoder(w)
 		err := encoder.Encode(&metrics)
@@ -89,11 +89,11 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		val, ok := h.storage.GetCounter(metrics.ID)
-		if !ok {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
+		val, _ := h.storage.GetCounter(metrics.ID)
+		// if !ok {
+		// 	w.WriteHeader(http.StatusNotFound)
+		// 	return
+		// }
 		metrics.Delta = &val
 		encoder := json.NewEncoder(w)
 		err := encoder.Encode(&metrics)
