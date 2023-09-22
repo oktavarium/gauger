@@ -113,6 +113,5 @@ func makeUpdateRequest(endpoint string, metrics models.Metrics) error {
 		return errors.New("response status code is not OK (200)")
 	}
 	decoder.Decode(&metricsResponse)
-	fmt.Println(metricsResponse)
 	return nil
 }
