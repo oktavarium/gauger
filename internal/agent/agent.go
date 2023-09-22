@@ -21,7 +21,8 @@ func Run() error {
 		}
 		if sleepCounter%flagsConfig.ReportInterval == 0 {
 			if err := reportMetrics(flagsConfig.Address, &metrics); err != nil {
-				panic(fmt.Errorf("error reporting metrics: %w", err))
+				//panic(fmt.Errorf("error reporting metrics: %w", err))
+				continue
 			}
 		}
 	}
