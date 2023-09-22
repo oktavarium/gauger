@@ -1,14 +1,13 @@
 package agent
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
 	"net/http"
 	"runtime"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/oktavarium/go-gauger/internal/models"
 )
 
@@ -92,26 +91,21 @@ func reportMetrics(address string, m *metrics) error {
 }
 
 func makeUpdateRequest(endpoint string, metrics models.Metrics) error {
-	body := bytes.Buffer{}
-	encoder := json.NewEncoder(&body)
-	err := encoder.Encode(metrics)
-	if err != nil {
-		return fmt.Errorf("error on encoding data: %w", err)
-	}
-
-	resp, err := http.Post(endpoint, "application/json", &body)
-	if err != nil {
-		return fmt.Errorf("error on making post request: %w", err)
-	}
-
-	defer resp.Body.Close()
-
 	var metricsResponse models.Metrics
-	decoder := json.NewDecoder(resp.Body)
+	client := resty.New()
+	resp, err := client.R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(metrics).
+		SetResult(&metricsResponse).
+		Post(endpoint)
 
-	if resp.StatusCode != http.StatusOK {
+	if err != nil {
+		return fmt.Errorf("error on making update request: %w", err)
+	}
+
+	if resp.StatusCode() != http.StatusOK {
 		return errors.New("response status code is not OK (200)")
 	}
-	decoder.Decode(&metricsResponse)
+
 	return nil
 }
