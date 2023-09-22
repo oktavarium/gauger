@@ -80,7 +80,7 @@ func reportMetrics(address string, m *metrics) error {
 	metrics.Value = nil
 	for k, v := range m.counters.metrics {
 		metrics.ID = k
-		metrics.MType = string(models.GaugeType)
+		metrics.MType = string(models.CounterType)
 		metrics.Delta = &v
 		if err := makeUpdateRequest(fmt.Sprintf("%s/%s/", address, updatePath),
 			metrics); err != nil {
@@ -92,7 +92,7 @@ func reportMetrics(address string, m *metrics) error {
 }
 
 func makeUpdateRequest(endpoint string, metrics models.Metrics) error {
-	var body bytes.Buffer
+	body := bytes.Buffer{}
 	encoder := json.NewEncoder(&body)
 	err := encoder.Encode(metrics)
 	if err != nil {
@@ -104,9 +104,10 @@ func makeUpdateRequest(endpoint string, metrics models.Metrics) error {
 		return fmt.Errorf("error on making post request: %w", err)
 	}
 
+	defer resp.Body.Close()
+
 	var metricsResponse models.Metrics
 	decoder := json.NewDecoder(resp.Body)
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return errors.New("response status code is not OK (200)")
