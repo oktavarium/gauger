@@ -56,10 +56,10 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
-	if w.Header().Get("Content-Type") != "application/json" {
-		w.WriteHeader(http.StatusUnsupportedMediaType)
-		return
-	}
+	// if w.Header().Get("Content-Type") != "application/json" {
+	// 	w.WriteHeader(http.StatusUnsupportedMediaType)
+	// 	return
+	// }
 
 	var metrics models.Metrics
 	decoder := json.NewDecoder(r.Body)
