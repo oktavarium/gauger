@@ -25,5 +25,5 @@ func compressMetrics(metrics models.Metrics) ([]byte, error) {
 		return nil, fmt.Errorf("error on compressing data: %w", err)
 	}
 
-	return compressedJson.Bytes(), nil
+	return compressedJSON.Bytes(), nil
 }
