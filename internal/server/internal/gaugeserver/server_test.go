@@ -26,7 +26,7 @@ func testRequest(t *testing.T, ts *httptest.Server,
 }
 
 func TestRouter(t *testing.T) {
-	server := NewGaugerServer("localhost")
+	server, _ := NewGaugerServer("localhost", "tmp.txt", false, 0)
 	ts := httptest.NewServer(server.router)
 	defer ts.Close()
 

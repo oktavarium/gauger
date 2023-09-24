@@ -16,7 +16,7 @@ func TestSaveGauge(t *testing.T) {
 	}{
 		{
 			name:    "simple test on saving gauge metrics",
-			storage: NewStorage(),
+			storage: NewMemoryStorage(),
 			metrics: metrics{
 				name: "Heap",
 				val:  5.0,
@@ -40,7 +40,7 @@ func TestSaveGauge(t *testing.T) {
 }
 
 func TestUpdateCounter(t *testing.T) {
-	storage := NewStorage()
+	storage := NewMemoryStorage()
 	type metrics struct {
 		name string
 		val  int64

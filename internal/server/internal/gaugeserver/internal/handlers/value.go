@@ -28,7 +28,7 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if metricType == models.GaugeType {
-		val, ok := h.storage.GetGauger(metricName)
+		val, ok := h.archiver.GetGauger(metricName)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -37,7 +37,7 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(valStr))
 	} else {
-		val, ok := h.storage.GetCounter(metricName)
+		val, ok := h.archiver.GetCounter(metricName)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -76,7 +76,7 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if models.MetricType(metrics.MType) == models.GaugeType {
-		val, ok := h.storage.GetGauger(metrics.ID)
+		val, ok := h.archiver.GetGauger(metrics.ID)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -89,7 +89,7 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		val, ok := h.storage.GetCounter(metrics.ID)
+		val, ok := h.archiver.GetCounter(metrics.ID)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return

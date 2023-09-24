@@ -41,7 +41,11 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		h.storage.SaveGauge(metricName, val)
+		err = h.archiver.SaveGauge(metricName, val)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
 	} else {
 		val, err := strconv.ParseInt(metricValueStr, 10, 64)
@@ -49,7 +53,11 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		h.storage.UpdateCounter(metricName, val)
+		err = h.archiver.UpdateCounter(metricName, val)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -84,20 +92,29 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if models.MetricType(metrics.MType) == models.GaugeType {
-		h.storage.SaveGauge(metrics.ID, *metrics.Value)
+		fmt.Println(*metrics.Value)
+		err := h.archiver.SaveGauge(metrics.ID, *metrics.Value)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		encoder := json.NewEncoder(w)
-		err := encoder.Encode(&metrics)
+		err = encoder.Encode(&metrics)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
 	} else {
-		h.storage.UpdateCounter(metrics.ID, *metrics.Delta)
-		val, _ := h.storage.GetCounter(metrics.ID)
+		err := h.archiver.UpdateCounter(metrics.ID, *metrics.Delta)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		val, _ := h.archiver.GetCounter(metrics.ID)
 		metrics.Delta = &val
 		encoder := json.NewEncoder(w)
-		err := encoder.Encode(&metrics)
+		err = encoder.Encode(&metrics)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

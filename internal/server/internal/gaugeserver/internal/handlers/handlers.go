@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage"
+	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/archivarius"
 )
 
 type Handler struct {
-	storage storage.Storage
+	archiver archivarius.Archivarius
 }
 
-func NewHandler(storage storage.Storage) *Handler {
+func NewHandler(archiver archivarius.Archivarius) *Handler {
 	return &Handler{
-		storage: storage,
+		archiver: archiver,
 	}
 }

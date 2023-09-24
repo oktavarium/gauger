@@ -14,7 +14,14 @@ func Run() error {
 	}
 
 	logger.Init(flagsConfig.LogLevel)
-	gs := gaugeserver.NewGaugerServer(flagsConfig.Address)
+
+	gs, err := gaugeserver.NewGaugerServer(flagsConfig.Address,
+		flagsConfig.FilePath,
+		flagsConfig.Restore,
+		flagsConfig.StoreInterval)
+	if err != nil {
+		return fmt.Errorf("error on creating gaugeserver: %w", err)
+	}
 
 	return gs.ListenAndServe()
 }
