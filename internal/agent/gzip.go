@@ -14,8 +14,8 @@ func compressMetrics(metrics models.Metrics) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error on marshaling metrics: %w", err)
 	}
-	var compressedJson bytes.Buffer
-	wr, err := gzip.NewWriterLevel(&compressedJson, gzip.BestCompression)
+	var compressedJSON bytes.Buffer
+	wr, err := gzip.NewWriterLevel(&compressedJSON, gzip.BestCompression)
 	if err != nil {
 		return nil, fmt.Errorf("error on creating gzip writer: %w", err)
 	}
