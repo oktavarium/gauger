@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/gzip"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/handlers"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage"
 	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
@@ -23,6 +24,7 @@ func NewGaugerServer(addr string) *GaugerServer {
 	handler := handlers.NewHandler(storage)
 
 	server.router.Use(logger.LoggerMiddleware)
+	server.router.Use(gzip.GzipMiddleware)
 	server.router.Get("/", handler.GetHandle)
 	server.router.Post("/update/", handler.UpdateJSONHandle)
 	server.router.Post("/value/", handler.ValueJSONHandle)
