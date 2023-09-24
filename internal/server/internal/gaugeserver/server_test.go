@@ -26,7 +26,7 @@ func testRequest(t *testing.T, ts *httptest.Server,
 }
 
 func TestRouter(t *testing.T) {
-	server, _ := NewGaugerServer("localhost", "tmp.txt", false, 0)
+	server, _ := NewGaugerServer("localhost", "/tmp/tmp.txt", false, 0)
 	ts := httptest.NewServer(server.router)
 	defer ts.Close()
 
@@ -46,7 +46,7 @@ func TestRouter(t *testing.T) {
 		{"simple test 7", "GET", "/value/counter/wrong", "", 404},
 		{"simple test 8", "GET", "/value/wrongtype/wrong", "", 400},
 		{"simple test 9", "POST", "/value/counter/pollscounter", "", 405},
-		{"simple test 10", "GET", "/", "alloc: 4\npollscounter: 1\n", 200},
+		{"simple test 10", "GET", "/", "{\"id\":\"alloc\",\"type\":\"gauge\",\"value\":4}\n{\"id\":\"pollscounter\",\"type\":\"counter\",\"delta\":1}\n", 200},
 	}
 
 	for _, test := range tests {

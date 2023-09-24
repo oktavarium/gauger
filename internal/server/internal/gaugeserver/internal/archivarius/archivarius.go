@@ -68,22 +68,22 @@ func (a *archiver) restore() error {
 	return nil
 }
 
-func (a *archiver) save() {
-	data, _ := a.GetAll()
-	a.archiveStorage.Save(data)
+func (a *archiver) save() error {
+	data, err := a.GetAll()
+	if err != nil {
+		return fmt.Errorf("error on saving all: %w", err)
+	}
+	err = a.archiveStorage.Save(data)
+	if err != nil {
+		return fmt.Errorf("error on saving all: %w", err)
+	}
+	return nil
 }
 
 func (a *archiver) SaveGauge(name string, val float64) error {
 	a.Storage.SaveGauge(name, val)
 	if a.timeout == 0 {
-		data, err := a.GetAll()
-		if err != nil {
-			return fmt.Errorf("error on saving gauge value: %w", err)
-		}
-		err = a.archiveStorage.Save(data)
-		if err != nil {
-			return fmt.Errorf("error on saving to arhive: %w", err)
-		}
+		return a.save()
 	}
 	return nil
 }
@@ -91,14 +91,7 @@ func (a *archiver) SaveGauge(name string, val float64) error {
 func (a *archiver) UpdateCounter(name string, val int64) error {
 	a.Storage.UpdateCounter(name, val)
 	if a.timeout == 0 {
-		data, err := a.GetAll()
-		if err != nil {
-			return fmt.Errorf("error on saving gauge value: %w", err)
-		}
-		err = a.archiveStorage.Save(data)
-		if err != nil {
-			return fmt.Errorf("error on saving to arhive: %w", err)
-		}
+		return a.save()
 	}
 	return nil
 }
