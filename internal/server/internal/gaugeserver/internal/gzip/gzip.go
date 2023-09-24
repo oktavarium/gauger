@@ -86,7 +86,7 @@ func GzipMiddleware(next http.Handler) http.Handler {
 			}
 
 			r.Body = gzipReader
-			gzipReader.Close()
+			defer gzipReader.Close()
 		}
 		next.ServeHTTP(ow, r)
 	}
