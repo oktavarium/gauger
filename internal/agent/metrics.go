@@ -92,10 +92,17 @@ func reportMetrics(address string, m *metrics) error {
 
 func makeUpdateRequest(endpoint string, metrics models.Metrics) error {
 	var metricsResponse models.Metrics
+	compressedMetrics, err := compressMetrics(metrics)
+	if err != nil {
+		return fmt.Errorf("error on compressing metrics on request: %w", err)
+	}
+
 	client := resty.New()
 	resp, err := client.R().
 		SetHeader("Content-Type", "application/json").
-		SetBody(metrics).
+		SetHeader("Content-Encoding", "gzip").
+		SetHeader("Accept-Encoding", "gzip").
+		SetBody(compressedMetrics).
 		SetResult(&metricsResponse).
 		Post(endpoint)
 
