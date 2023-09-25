@@ -3,8 +3,8 @@ package shared
 type MetricType string
 
 const (
-	GaugeType   MetricType = "gauge"
-	CounterType MetricType = "counter"
+	GaugeType   string = "gauge"
+	CounterType string = "counter"
 )
 
 type Metric struct {
@@ -17,7 +17,7 @@ type Metric struct {
 func NewGaugeMetric(id string, val *float64) Metric {
 	return Metric{
 		ID:    id,
-		MType: string(GaugeType),
+		MType: GaugeType,
 		Value: val,
 	}
 }
@@ -25,7 +25,7 @@ func NewGaugeMetric(id string, val *float64) Metric {
 func NewCounterMetric(id string, val *int64) Metric {
 	return Metric{
 		ID:    id,
-		MType: string(CounterType),
+		MType: CounterType,
 		Delta: val,
 	}
 }

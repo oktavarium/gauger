@@ -12,7 +12,7 @@ import (
 
 func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	metricType := shared.MetricType(strings.ToLower(chi.URLParam(r, "type")))
+	metricType := strings.ToLower(chi.URLParam(r, "type"))
 	metricName := strings.ToLower(chi.URLParam(r, "name"))
 	metricValueStr := chi.URLParam(r, "value")
 
@@ -71,7 +71,7 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var delta int64
-	switch shared.MetricType(metric.MType) {
+	switch metric.MType {
 	case shared.GaugeType:
 		err = h.storage.SaveGauge(metric.ID, *metric.Value)
 
