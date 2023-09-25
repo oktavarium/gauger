@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/oktavarium/go-gauger/internal/models"
+	"github.com/oktavarium/go-gauger/internal/shared"
 )
 
-func compressMetrics(metrics models.Metrics) ([]byte, error) {
+func compressMetrics(metrics shared.Metric) ([]byte, error) {
 	jsonRaw, err := json.Marshal(metrics)
 	if err != nil {
 		return nil, fmt.Errorf("error on marshaling metrics: %w", err)

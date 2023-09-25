@@ -3,6 +3,8 @@ package agent
 import (
 	"fmt"
 	"time"
+
+	"log"
 )
 
 func Run() error {
@@ -21,7 +23,7 @@ func Run() error {
 		}
 		if sleepCounter%flagsConfig.ReportInterval == 0 {
 			if err := reportMetrics(flagsConfig.Address, &metrics); err != nil {
-				//panic(fmt.Errorf("error reporting metrics: %w", err))
+				log.Printf("failed to report metrics: %v", err)
 				continue
 			}
 		}
