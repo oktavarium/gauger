@@ -88,10 +88,16 @@ func (a *archiver) SaveGauge(name string, val float64) error {
 	return nil
 }
 
-func (a *archiver) UpdateCounter(name string, val int64) error {
-	a.Storage.UpdateCounter(name, val)
-	if a.timeout == 0 {
-		return a.save()
+func (a *archiver) UpdateCounter(name string, val int64) (int64, error) {
+	val, err := a.Storage.UpdateCounter(name, val)
+	if err != nil {
+		return 0, fmt.Errorf("failed to update counter: %w", err)
 	}
-	return nil
+	if a.timeout == 0 {
+		err := a.save()
+		if err != nil {
+			return 0, fmt.Errorf("failed to update counter: %w", err)
+		}
+	}
+	return val, nil
 }

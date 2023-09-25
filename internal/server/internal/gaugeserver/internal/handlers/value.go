@@ -21,32 +21,26 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// checking metric name
-	if len(metricName) == 0 {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	if metricType == models.GaugeType {
+	var valStr string
+	switch metricType {
+	case models.GaugeType:
 		val, ok := h.archiver.GetGauger(metricName)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		valStr := strconv.FormatFloat(val, 'f', -1, 64)
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(valStr))
-	} else {
+		valStr = strconv.FormatFloat(val, 'f', -1, 64)
+
+	case models.CounterType:
 		val, ok := h.archiver.GetCounter(metricName)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		valStr := strconv.FormatInt(val, 10)
-
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(valStr))
+		valStr = strconv.FormatInt(val, 10)
 	}
+
+	w.Write([]byte(valStr))
 }
 
 func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
@@ -75,31 +69,27 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if models.MetricType(metrics.MType) == models.GaugeType {
+	switch models.MetricType(metrics.MType) {
+	case models.GaugeType:
 		val, ok := h.archiver.GetGauger(metrics.ID)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		metrics.Value = &val
-		encoder := json.NewEncoder(w)
-		err := encoder.Encode(&metrics)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	} else {
+
+	case models.CounterType:
 		val, ok := h.archiver.GetCounter(metrics.ID)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		metrics.Delta = &val
-		encoder := json.NewEncoder(w)
-		err := encoder.Encode(&metrics)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+	}
+	encoder := json.NewEncoder(w)
+	err = encoder.Encode(&metrics)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 }

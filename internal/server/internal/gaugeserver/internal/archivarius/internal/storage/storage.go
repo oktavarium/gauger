@@ -25,9 +25,9 @@ func (s *InMemoryStorage) SaveGauge(name string, val float64) error {
 	return nil
 }
 
-func (s *InMemoryStorage) UpdateCounter(name string, val int64) error {
+func (s *InMemoryStorage) UpdateCounter(name string, val int64) (int64, error) {
 	s.counter[name] += val
-	return nil
+	return s.counter[name], nil
 }
 
 func (s *InMemoryStorage) GetGauger(name string) (float64, bool) {
@@ -68,13 +68,6 @@ func (s *InMemoryStorage) GetAll() ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error on encoding data: %w", err)
 		}
-
-		// if i != len(allMetrics)-1 {
-		// 	err = buffer.WriteByte('\n')
-		// 	if err != nil {
-		// 		return nil, fmt.Errorf("error on encoding data: %w", err)
-		// 	}
-		// }
 	}
 	return buffer.Bytes(), nil
 }
