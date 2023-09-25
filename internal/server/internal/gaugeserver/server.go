@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/archivarius"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/gzip"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/handlers"
+	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage"
 	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
 )
 
@@ -25,7 +25,7 @@ func NewGaugerServer(addr string,
 		addr:   addr,
 	}
 
-	archiver, err := archivarius.NewArchiver(filename, restore, timeout)
+	archiver, err := storage.NewInMemoryStorage(filename, restore, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("error on creating archiver: %w", err)
 	}

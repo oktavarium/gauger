@@ -3,20 +3,19 @@ package storage
 import "testing"
 
 func TestSaveGauge(t *testing.T) {
+	storage, _ := NewInMemoryStorage("/tmp/file.log", false, 500)
 	type metrics struct {
 		name string
 		val  float64
 	}
 	tests := []struct {
 		name    string
-		storage Storage
 		metrics metrics
 		ok      bool
 		want    float64
 	}{
 		{
-			name:    "simple test on saving gauge metrics",
-			storage: NewMemoryStorage(),
+			name: "simple test on saving gauge metrics",
 			metrics: metrics{
 				name: "Heap",
 				val:  5.0,
@@ -27,8 +26,8 @@ func TestSaveGauge(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			test.storage.SaveGauge(test.metrics.name, test.metrics.val)
-			val, ok := test.storage.GetGauger(test.metrics.name)
+			storage.SaveGauge(test.metrics.name, test.metrics.val)
+			val, ok := storage.GetGauger(test.metrics.name)
 			if ok != test.ok {
 				t.Errorf("Want: %T, got: %T", test.ok, ok)
 			}
@@ -40,7 +39,7 @@ func TestSaveGauge(t *testing.T) {
 }
 
 func TestUpdateCounter(t *testing.T) {
-	storage := NewMemoryStorage()
+	storage, _ := NewInMemoryStorage("/tmp/file.log", false, 500)
 	type metrics struct {
 		name string
 		val  int64

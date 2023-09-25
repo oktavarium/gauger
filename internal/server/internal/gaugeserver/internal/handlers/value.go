@@ -7,37 +7,35 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/oktavarium/go-gauger/internal/models"
+	"github.com/oktavarium/go-gauger/internal/shared"
 )
 
 func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	metricType := models.MetricType(strings.ToLower(chi.URLParam(r, "type")))
+	metricType := shared.MetricType(strings.ToLower(chi.URLParam(r, "type")))
 	metricName := strings.ToLower(chi.URLParam(r, "name"))
-
-	// checking metric type
-	if metricType != models.GaugeType && metricType != models.CounterType {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
 
 	var valStr string
 	switch metricType {
-	case models.GaugeType:
-		val, ok := h.archiver.GetGauger(metricName)
+	case shared.GaugeType:
+		val, ok := h.storage.GetGauger(metricName)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		valStr = strconv.FormatFloat(val, 'f', -1, 64)
 
-	case models.CounterType:
-		val, ok := h.archiver.GetCounter(metricName)
+	case shared.CounterType:
+		val, ok := h.storage.GetCounter(metricName)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		valStr = strconv.FormatInt(val, 10)
+
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	w.Write([]byte(valStr))
@@ -50,44 +48,43 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var metrics models.Metrics
+	var metric shared.Metric
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&metrics)
+	err := decoder.Decode(&metric)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	// checking metric type
-	if models.MetricType(metrics.MType) != models.GaugeType && models.MetricType(metrics.MType) != models.CounterType {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// checking metric name
-	if len(metrics.ID) == 0 {
+	if len(metric.ID) == 0 {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	switch models.MetricType(metrics.MType) {
-	case models.GaugeType:
-		val, ok := h.archiver.GetGauger(metrics.ID)
+	switch shared.MetricType(metric.MType) {
+	case shared.GaugeType:
+		val, ok := h.storage.GetGauger(metric.ID)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		metrics.Value = &val
+		metric.Value = &val
 
-	case models.CounterType:
-		val, ok := h.archiver.GetCounter(metrics.ID)
+	case shared.CounterType:
+		val, ok := h.storage.GetCounter(metric.ID)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		metrics.Delta = &val
+		metric.Delta = &val
+
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	encoder := json.NewEncoder(w)
-	err = encoder.Encode(&metrics)
+	err = encoder.Encode(&metric)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

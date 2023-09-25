@@ -7,40 +7,38 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/oktavarium/go-gauger/internal/models"
+	"github.com/oktavarium/go-gauger/internal/shared"
 )
 
 func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	metricType := models.MetricType(strings.ToLower(chi.URLParam(r, "type")))
+	metricType := shared.MetricType(strings.ToLower(chi.URLParam(r, "type")))
 	metricName := strings.ToLower(chi.URLParam(r, "name"))
 	metricValueStr := chi.URLParam(r, "value")
 
-	// checking metric type
-	if metricType != models.GaugeType && metricType != models.CounterType {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	var err error
 	switch metricType {
-	case models.GaugeType:
+	case shared.GaugeType:
 		var val float64
 		val, err = strconv.ParseFloat(metricValueStr, 64)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		err = h.archiver.SaveGauge(metricName, val)
+		err = h.storage.SaveGauge(metricName, val)
 
-	case models.CounterType:
+	case shared.CounterType:
 		var val int64
 		val, err = strconv.ParseInt(metricValueStr, 10, 64)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		_, err = h.archiver.UpdateCounter(metricName, val)
+		_, err = h.storage.UpdateCounter(metricName, val)
+
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	if err != nil {
@@ -58,33 +56,32 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var metrics models.Metrics
+	var metric shared.Metric
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&metrics)
+	err := decoder.Decode(&metric)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	// checking metric type
-	if models.MetricType(metrics.MType) != models.GaugeType && models.MetricType(metrics.MType) != models.CounterType {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	// checking metric name
-	if len(metrics.ID) == 0 {
+	if len(metric.ID) == 0 {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	var delta int64
-	switch models.MetricType(metrics.MType) {
-	case models.GaugeType:
-		err = h.archiver.SaveGauge(metrics.ID, *metrics.Value)
-	case models.CounterType:
-		delta, err = h.archiver.UpdateCounter(metrics.ID, *metrics.Delta)
-		metrics.Delta = &delta
+	switch shared.MetricType(metric.MType) {
+	case shared.GaugeType:
+		err = h.storage.SaveGauge(metric.ID, *metric.Value)
+
+	case shared.CounterType:
+		delta, err = h.storage.UpdateCounter(metric.ID, *metric.Delta)
+		metric.Delta = &delta
+
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	if err != nil {
@@ -93,7 +90,7 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	encoder := json.NewEncoder(w)
-	err = encoder.Encode(&metrics)
+	err = encoder.Encode(&metric)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
