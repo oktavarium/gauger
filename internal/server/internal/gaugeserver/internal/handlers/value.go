@@ -77,7 +77,8 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		metric.Delta = &val
+
+    metric.Delta = &val
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
