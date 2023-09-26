@@ -9,8 +9,11 @@ import (
 )
 
 type config struct {
-	Address  string `env:"ADDRESS"`
-	LogLevel string `env:"LOGLEVEL"`
+	Address       string `env:"ADDRESS"`
+	LogLevel      string `env:"LOGLEVEL"`
+	StoreInterval int    `env:"STORE_INTERVAL"`
+	FilePath      string `env:"FILE_STORAGE_PATH"`
+	Restore       bool   `env:"RESTORE"`
 }
 
 func loadConfig() (config, error) {
@@ -19,6 +22,12 @@ func loadConfig() (config, error) {
 		"address and port of server in notaion address:port")
 	flag.StringVar(&flagsConfig.LogLevel, "l", "info",
 		"log level")
+	flag.IntVar(&flagsConfig.StoreInterval, "i", 300,
+		"store interval")
+	flag.StringVar(&flagsConfig.FilePath, "f", "/tmp/metrics-db.json",
+		"file storage path")
+	flag.BoolVar(&flagsConfig.Restore, "r", true,
+		"restore metrics")
 	flag.Parse()
 
 	if err := env.Parse(&flagsConfig); err != nil {

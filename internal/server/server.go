@@ -5,7 +5,6 @@ import (
 
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver"
 	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
-	"go.uber.org/zap"
 )
 
 func Run() error {
@@ -15,9 +14,14 @@ func Run() error {
 	}
 
 	logger.Init(flagsConfig.LogLevel)
-	gs := gaugeserver.NewGaugerServer(flagsConfig.Address)
-	logger.Logger().Info("server is starting...",
-		zap.String("addr", flagsConfig.Address),
-	)
+
+	gs, err := gaugeserver.NewGaugerServer(flagsConfig.Address,
+		flagsConfig.FilePath,
+		flagsConfig.Restore,
+		flagsConfig.StoreInterval)
+	if err != nil {
+		return fmt.Errorf("error on creating gaugeserver: %w", err)
+	}
+
 	return gs.ListenAndServe()
 }

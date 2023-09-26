@@ -1,9 +1,11 @@
 package gaugeserver
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/gzip"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/handlers"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage"
 	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
@@ -14,21 +16,31 @@ type GaugerServer struct {
 	addr   string
 }
 
-func NewGaugerServer(addr string) *GaugerServer {
+func NewGaugerServer(addr string,
+	filename string,
+	restore bool,
+	timeout int) (*GaugerServer, error) {
 	server := &GaugerServer{
 		router: chi.NewRouter(),
 		addr:   addr,
 	}
 
-	storage := storage.NewStorage()
-	handler := handlers.NewHandler(storage)
+	archiver, err := storage.NewInMemoryStorage(filename, restore, timeout)
+	if err != nil {
+		return nil, fmt.Errorf("error on creating archiver: %w", err)
+	}
+
+	handler := handlers.NewHandler(archiver)
 
 	server.router.Use(logger.LoggerMiddleware)
+	server.router.Use(gzip.GzipMiddleware)
 	server.router.Get("/", handler.GetHandle)
+	server.router.Post("/update/", handler.UpdateJSONHandle)
+	server.router.Post("/value/", handler.ValueJSONHandle)
 	server.router.Post("/update/{type}/{name}/{value}", handler.UpdateHandle)
 	server.router.Get("/value/{type}/{name}", handler.ValueHandle)
 
-	return server
+	return server, nil
 }
 
 func (g *GaugerServer) ListenAndServe() error {

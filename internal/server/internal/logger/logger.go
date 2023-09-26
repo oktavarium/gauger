@@ -31,9 +31,8 @@ func (lrw *loggedResponseWriter) Write(body []byte) (int, error) {
 }
 
 func (lrw *loggedResponseWriter) WriteHeader(statusCode int) {
-	lrw.w.WriteHeader(statusCode)
-	fmt.Println(statusCode)
 	lrw.i.status = statusCode
+	lrw.w.WriteHeader(statusCode)
 }
 
 func Logger() *zap.Logger {
@@ -57,7 +56,7 @@ func Init(level string) error {
 	return nil
 }
 
-func LoggerMiddleware(h http.Handler) http.Handler {
+func LoggerMiddleware(next http.Handler) http.Handler {
 	hf := func(w http.ResponseWriter, r *http.Request) {
 		uri := r.RequestURI
 		method := r.Method
@@ -65,10 +64,10 @@ func LoggerMiddleware(h http.Handler) http.Handler {
 
 		loggerRW := loggedResponseWriter{
 			w: w,
-			i: &info{},
+			i: &info{status: http.StatusOK},
 		}
 
-		h.ServeHTTP(&loggerRW, r)
+		next.ServeHTTP(&loggerRW, r)
 		duration := time.Since(start)
 
 		Logger().Info(">",
