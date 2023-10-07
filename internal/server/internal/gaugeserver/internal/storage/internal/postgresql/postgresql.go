@@ -14,7 +14,7 @@ type storage struct {
 }
 
 func NewStorage(dsn string) (*storage, error) {
-	db, err := sql.Open("postgresql", dsn)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		return nil, err
 	}
