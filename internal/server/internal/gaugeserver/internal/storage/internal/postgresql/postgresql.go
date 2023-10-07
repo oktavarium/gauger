@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	_ "github.com/jackc/pgx"
+	_ "github.com/lib/pq"
 )
 
 type storage struct {

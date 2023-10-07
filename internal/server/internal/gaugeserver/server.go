@@ -28,7 +28,7 @@ func NewGaugerServer(addr string,
 
 	storage, err := storage.NewPostgresqlStorage(dsn)
 	if err != nil {
-		return nil, fmt.Errorf("error on creating archiver: %w", err)
+		return nil, fmt.Errorf("error on creating storage: %w", err)
 	}
 
 	handler := handlers.NewHandler(storage)
