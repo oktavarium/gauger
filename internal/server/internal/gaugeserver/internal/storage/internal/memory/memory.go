@@ -58,7 +58,7 @@ func (s *storage) SaveGauge(name string, val float64) error {
 	return nil
 }
 
-func (s *storage) UpdateCounter(name string, val int64) (int64, error) {
+func (s *storage) UpdateCounter(ctx context.Context, name string, val int64) (int64, error) {
 	s.counter[name] += val
 	if s.sync {
 		err := s.save()
@@ -116,7 +116,7 @@ func (s *storage) restore() error {
 		case string(shared.GaugeType):
 			s.SaveGauge(metrics.ID, *metrics.Value)
 		case string(shared.CounterType):
-			s.UpdateCounter(metrics.ID, *metrics.Delta)
+			s.UpdateCounter(context.Background(), metrics.ID, *metrics.Delta)
 		}
 	}
 

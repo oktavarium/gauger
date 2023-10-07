@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -34,7 +35,7 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		_, err = h.storage.UpdateCounter(metricName, val)
+		_, err = h.storage.UpdateCounter(r.Context(), metricName, val)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
@@ -76,7 +77,8 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 		err = h.storage.SaveGauge(metric.ID, *metric.Value)
 
 	case shared.CounterType:
-		delta, err = h.storage.UpdateCounter(metric.ID, *metric.Delta)
+		delta, err = h.storage.UpdateCounter(r.Context(), metric.ID, *metric.Delta)
+		fmt.Println(err)
 		metric.Delta = &delta
 
 	default:
@@ -85,6 +87,7 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -92,6 +95,7 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 	encoder := json.NewEncoder(w)
 	err = encoder.Encode(&metric)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

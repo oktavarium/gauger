@@ -1,6 +1,9 @@
 package storage
 
-import "testing"
+import (
+	"context"
+	"testing"
+)
 
 func TestSaveGauge(t *testing.T) {
 	storage, _ := NewInMemoryStorage("/tmp/file.log", false, 500)
@@ -71,7 +74,7 @@ func TestUpdateCounter(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			storage.UpdateCounter(test.metrics.name, test.metrics.val)
+			storage.UpdateCounter(context.Background(), test.metrics.name, test.metrics.val)
 			val, ok := storage.GetCounter(test.metrics.name)
 			if ok != test.ok {
 				t.Errorf("Want: %T, got: %T", test.ok, ok)
