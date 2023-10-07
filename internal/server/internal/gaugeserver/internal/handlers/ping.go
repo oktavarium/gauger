@@ -3,11 +3,10 @@ package handlers
 import "net/http"
 
 func (h *Handler) PingHandle(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	data, err := h.storage.GetAll()
+	err := h.storage.Ping()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.Write(data)
+	w.WriteHeader(http.StatusOK)
 }
