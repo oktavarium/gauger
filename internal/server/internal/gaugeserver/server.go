@@ -19,22 +19,24 @@ type GaugerServer struct {
 func NewGaugerServer(addr string,
 	filename string,
 	restore bool,
-	timeout int) (*GaugerServer, error) {
+	timeout int,
+	dsn string) (*GaugerServer, error) {
 	server := &GaugerServer{
 		router: chi.NewRouter(),
 		addr:   addr,
 	}
 
-	archiver, err := storage.NewInMemoryStorage(filename, restore, timeout)
+	storage, err := storage.NewPostgresqlStorage(dsn)
 	if err != nil {
 		return nil, fmt.Errorf("error on creating archiver: %w", err)
 	}
 
-	handler := handlers.NewHandler(archiver)
+	handler := handlers.NewHandler(storage)
 
 	server.router.Use(logger.LoggerMiddleware)
 	server.router.Use(gzip.GzipMiddleware)
 	server.router.Get("/", handler.GetHandle)
+	server.router.Get("/ping/", handler.PingHandle)
 	server.router.Post("/update/", handler.UpdateJSONHandle)
 	server.router.Post("/value/", handler.ValueJSONHandle)
 	server.router.Post("/update/{type}/{name}/{value}", handler.UpdateHandle)

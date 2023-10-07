@@ -6,4 +6,5 @@ type Storage interface {
 	GetGauger(string) (float64, bool)
 	GetCounter(string) (int64, bool)
 	GetAll() ([]byte, error)
+	Ping() error
 }

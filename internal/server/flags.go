@@ -14,6 +14,7 @@ type config struct {
 	StoreInterval int    `env:"STORE_INTERVAL"`
 	FilePath      string `env:"FILE_STORAGE_PATH"`
 	Restore       bool   `env:"RESTORE"`
+	DatabaseDSN   string `env:"DATABASE_DSN"`
 }
 
 func loadConfig() (config, error) {
@@ -28,6 +29,8 @@ func loadConfig() (config, error) {
 		"file storage path")
 	flag.BoolVar(&flagsConfig.Restore, "r", true,
 		"restore metrics")
+	flag.StringVar(&flagsConfig.DatabaseDSN, "d", "",
+		"database connection string")
 	flag.Parse()
 
 	if err := env.Parse(&flagsConfig); err != nil {
