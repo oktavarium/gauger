@@ -25,13 +25,18 @@ func NewGaugerServer(addr string,
 		router: chi.NewRouter(),
 		addr:   addr,
 	}
-
-	storage, err := storage.NewPostgresqlStorage(dsn)
+	var s storage.Storage
+	var err error
+	if len(dsn) == 0 {
+		s, err = storage.NewInMemoryStorage(filename, restore, timeout)
+	} else {
+		s, err = storage.NewPostgresqlStorage(dsn)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error on creating storage: %w", err)
 	}
 
-	handler := handlers.NewHandler(storage)
+	handler := handlers.NewHandler(s)
 
 	server.router.Use(logger.LoggerMiddleware)
 	server.router.Use(gzip.GzipMiddleware)
