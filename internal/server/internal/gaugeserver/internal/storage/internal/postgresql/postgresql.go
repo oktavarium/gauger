@@ -23,11 +23,41 @@ func NewStorage(dsn string) (*storage, error) {
 		db,
 	}
 
+	err = s.initDb(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("error occured on init db when creating new storage: %w", err)
+	}
+
 	return s, nil
 }
 
-func (s *storage) Ping() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+func (s *storage) initDb(ctx context.Context) error {
+	err := s.Ping(ctx)
+	if err != nil {
+		return fmt.Errorf("error occured on db ping when initing db: %w", err)
+	}
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	defer cancel()
+
+	_, err = s.ExecContext(ctx, "CREATE TABLE IF NOT EXISTS gauge (name TEXT, value DOUBLE PRECISION)")
+	if err != nil {
+		return fmt.Errorf("error occured on creating table gauge: %w", err)
+	}
+
+	_, err = s.ExecContext(ctx, "CREATE TABLE IF NOT EXISTS counter(name TEXT, value INTEGER)")
+	if err != nil {
+		return fmt.Errorf("error occured on creating table counter: %w", err)
+	}
+
+	// _, err = s.ExecContext(ctx, "GRANT ALL ON counter, gauge TO ")
+	// if err != nil {
+	// 	return fmt.Errorf("error occured on creating table counter: %w", err)
+	// }
+	return nil
+}
+
+func (s *storage) Ping(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
 
 	err := s.PingContext(ctx)

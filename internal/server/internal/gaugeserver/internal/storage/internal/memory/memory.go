@@ -3,6 +3,7 @@ package memory
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -134,6 +135,6 @@ func (s *storage) save() error {
 	return nil
 }
 
-func (s *storage) Ping() error {
+func (s *storage) Ping(context.Context) error {
 	return nil
 }
