@@ -2,12 +2,14 @@ package memory
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 
 	"github.com/oktavarium/go-gauger/internal/shared"
 )
 
-func (s *storage) BatchUpdate(ctx context.Context, metrics []shared.Metric) error {
+func (s *storage) BatchUpdate(ctx context.Context, w io.Writer, metrics []shared.Metric) error {
 	for _, v := range metrics {
 		switch v.MType {
 		case shared.GaugeType:
@@ -19,6 +21,10 @@ func (s *storage) BatchUpdate(ctx context.Context, metrics []shared.Metric) erro
 				return fmt.Errorf("error occured on saving counter: %w", err)
 			}
 		}
+	}
+	encoder := json.NewEncoder(w)
+	if err := encoder.Encode(metrics[0]); err != nil {
+		return fmt.Errorf("error occured on encoding result of batchupdate :%w", err)
 	}
 	return nil
 }

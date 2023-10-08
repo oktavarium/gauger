@@ -19,7 +19,7 @@ counter
 (
 	id SERIAL PRIMARY KEY,
  	name TEXT,
- 	value INTEGER
+ 	value BIGINT
 );
 `
 

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 
 	"github.com/oktavarium/go-gauger/internal/shared"
@@ -15,20 +14,19 @@ func (h *Handler) UpdatesHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	metrics := make([]shared.Metric, 0)
-	var metric shared.Metric
+	var metrics []shared.Metric
 	decoder := json.NewDecoder(r.Body)
-	for {
-		if err := decoder.Decode(&metric); err == io.EOF {
-			break
-		} else if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		metrics = append(metrics, metric)
+	if err := decoder.Decode(&metrics); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
-	err := h.storage.BatchUpdate(r.Context(), metrics)
+	if len(metrics) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err := h.storage.BatchUpdate(r.Context(), w, metrics)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

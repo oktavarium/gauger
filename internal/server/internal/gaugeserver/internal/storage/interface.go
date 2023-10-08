@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"io"
 
 	"github.com/oktavarium/go-gauger/internal/shared"
 )
@@ -13,5 +14,5 @@ type Storage interface {
 	GetCounter(context.Context, string) (int64, bool)
 	GetAll(context.Context) ([]byte, error)
 	Ping(context.Context) error
-	BatchUpdate(context.Context, []shared.Metric) error
+	BatchUpdate(context.Context, io.Writer, []shared.Metric) error
 }

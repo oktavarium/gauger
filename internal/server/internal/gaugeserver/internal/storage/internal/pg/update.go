@@ -31,5 +31,5 @@ func (s *storage) UpdateCounter(ctx context.Context, name string, val int64) (in
 		return 0, fmt.Errorf("error occured on selecting counter: %w", err)
 	}
 
-	return val, tx.Commit()
+	return currentVal + val, tx.Commit()
 }

@@ -25,7 +25,7 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		err = h.storage.SaveGauge(metricName, val)
+		err = h.storage.SaveGauge(r.Context(), metricName, val)
 
 	case shared.CounterType:
 		var val int64
@@ -73,7 +73,7 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 	var delta int64
 	switch metric.MType {
 	case shared.GaugeType:
-		err = h.storage.SaveGauge(metric.ID, *metric.Value)
+		err = h.storage.SaveGauge(r.Context(), metric.ID, *metric.Value)
 
 	case shared.CounterType:
 		delta, err = h.storage.UpdateCounter(r.Context(), metric.ID, *metric.Delta)

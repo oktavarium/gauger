@@ -18,7 +18,7 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 	var valStr string
 	switch metricType {
 	case shared.GaugeType:
-		val, ok := h.storage.GetGauger(metricName)
+		val, ok := h.storage.GetGauger(r.Context(), metricName)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -26,7 +26,7 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 		valStr = strconv.FormatFloat(val, 'f', -1, 64)
 
 	case shared.CounterType:
-		val, ok := h.storage.GetCounter(metricName)
+		val, ok := h.storage.GetCounter(r.Context(), metricName)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -64,7 +64,7 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 
 	switch metric.MType {
 	case shared.GaugeType:
-		val, ok := h.storage.GetGauger(metric.ID)
+		val, ok := h.storage.GetGauger(r.Context(), metric.ID)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -72,13 +72,13 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 		metric.Value = &val
 
 	case shared.CounterType:
-		val, ok := h.storage.GetCounter(metric.ID)
+		val, ok := h.storage.GetCounter(r.Context(), metric.ID)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-    metric.Delta = &val
+		metric.Delta = &val
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)

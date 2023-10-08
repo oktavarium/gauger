@@ -29,8 +29,8 @@ func TestSaveGauge(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			storage.SaveGauge(test.metrics.name, test.metrics.val)
-			val, ok := storage.GetGauger(test.metrics.name)
+			storage.SaveGauge(context.Background(), test.metrics.name, test.metrics.val)
+			val, ok := storage.GetGauger(context.Background(), test.metrics.name)
 			if ok != test.ok {
 				t.Errorf("Want: %T, got: %T", test.ok, ok)
 			}
@@ -75,7 +75,7 @@ func TestUpdateCounter(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			storage.UpdateCounter(context.Background(), test.metrics.name, test.metrics.val)
-			val, ok := storage.GetCounter(test.metrics.name)
+			val, ok := storage.GetCounter(context.Background(), test.metrics.name)
 			if ok != test.ok {
 				t.Errorf("Want: %T, got: %T", test.ok, ok)
 			}
