@@ -50,7 +50,7 @@ func NewStorage(filename string, restore bool, timeout int) (*storage, error) {
 	return s, nil
 }
 
-func (s *storage) SaveGauge(name string, val float64) error {
+func (s *storage) SaveGauge(ctx context.Context, name string, val float64) error {
 	s.gauge[name] = val
 	if s.sync {
 		return s.save()
@@ -69,17 +69,17 @@ func (s *storage) UpdateCounter(ctx context.Context, name string, val int64) (in
 	return s.counter[name], nil
 }
 
-func (s *storage) GetGauger(name string) (float64, bool) {
+func (s *storage) GetGauger(ctx context.Context, name string) (float64, bool) {
 	val, ok := s.gauge[name]
 	return val, ok
 }
 
-func (s *storage) GetCounter(name string) (int64, bool) {
+func (s *storage) GetCounter(ctx context.Context, name string) (int64, bool) {
 	val, ok := s.counter[name]
 	return val, ok
 }
 
-func (s *storage) GetAll() ([]byte, error) {
+func (s *storage) GetAll(ctx context.Context) ([]byte, error) {
 	allMetrics := make([]shared.Metric, 0, len(s.gauge)+len(s.counter))
 	var buffer bytes.Buffer
 	encoder := json.NewEncoder(&buffer)
@@ -114,7 +114,7 @@ func (s *storage) restore() error {
 		}
 		switch metrics.MType {
 		case string(shared.GaugeType):
-			s.SaveGauge(metrics.ID, *metrics.Value)
+			s.SaveGauge(context.Background(), metrics.ID, *metrics.Value)
 		case string(shared.CounterType):
 			s.UpdateCounter(context.Background(), metrics.ID, *metrics.Delta)
 		}
@@ -124,7 +124,7 @@ func (s *storage) restore() error {
 }
 
 func (s *storage) save() error {
-	data, err := s.GetAll()
+	data, err := s.GetAll(context.Background())
 	if err != nil {
 		return fmt.Errorf("error on saving all: %w", err)
 	}

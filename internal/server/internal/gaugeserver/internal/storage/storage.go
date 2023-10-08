@@ -2,7 +2,7 @@ package storage
 
 import (
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage/internal/memory"
-	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage/internal/postgresql"
+	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage/internal/pg"
 )
 
 func NewInMemoryStorage(filename string, restore bool, timeout int) (Storage, error) {
@@ -10,5 +10,5 @@ func NewInMemoryStorage(filename string, restore bool, timeout int) (Storage, er
 }
 
 func NewPostgresqlStorage(dsn string) (Storage, error) {
-	return postgresql.NewStorage(dsn)
+	return pg.NewStorage(dsn)
 }

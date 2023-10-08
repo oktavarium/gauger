@@ -3,10 +3,10 @@ package storage
 import "context"
 
 type Storage interface {
-	SaveGauge(string, float64) error
+	SaveGauge(context.Context, string, float64) error
 	UpdateCounter(context.Context, string, int64) (int64, error)
-	GetGauger(string) (float64, bool)
-	GetCounter(string) (int64, bool)
-	GetAll() ([]byte, error)
+	GetGauger(context.Context, string) (float64, bool)
+	GetCounter(context.Context, string) (int64, bool)
+	GetAll(context.Context) ([]byte, error)
 	Ping(context.Context) error
 }

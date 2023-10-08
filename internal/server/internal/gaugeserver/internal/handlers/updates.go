@@ -10,7 +10,7 @@ import (
 	"github.com/oktavarium/go-gauger/internal/shared"
 )
 
-func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdatesHandle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	metricType := strings.ToLower(chi.URLParam(r, "type"))
 	metricName := strings.ToLower(chi.URLParam(r, "name"))
@@ -49,7 +49,7 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdatesJSONHandle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusUnsupportedMediaType)

@@ -29,3 +29,15 @@ func NewCounterMetric(id string, val *int64) Metric {
 		Delta: val,
 	}
 }
+
+func NewEmptyGaugeMetric() Metric {
+	return Metric{
+		MType: GaugeType,
+	}
+}
+
+func NewEmptyCounterMetric() Metric {
+	return Metric{
+		MType: CounterType,
+	}
+}

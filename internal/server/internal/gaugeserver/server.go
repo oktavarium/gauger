@@ -43,6 +43,7 @@ func NewGaugerServer(addr string,
 	server.router.Get("/", handler.GetHandle)
 	server.router.Get("/ping", handler.PingHandle)
 	server.router.Post("/update/", handler.UpdateJSONHandle)
+	server.router.Post("/updates/", handler.UpdatesHandle)
 	server.router.Post("/value/", handler.ValueJSONHandle)
 	server.router.Post("/update/{type}/{name}/{value}", handler.UpdateHandle)
 	server.router.Get("/value/{type}/{name}", handler.ValueHandle)
