@@ -14,10 +14,8 @@ func compressMetrics(metrics []shared.Metric) ([]byte, error) {
 	wr := gzip.NewWriter(&compressedJSON)
 
 	encoder := json.NewEncoder(wr)
-	for _, v := range metrics {
-		if err := encoder.Encode(v); err != nil {
-			return nil, fmt.Errorf("error occured on encoding metric: %w", err)
-		}
+	if err := encoder.Encode(metrics); err != nil {
+		return nil, fmt.Errorf("error occured on encoding metric: %w", err)
 	}
 
 	wr.Close()
