@@ -1,17 +1,13 @@
 package memory
 
 import (
-	"bufio"
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage/internal/memory/archive"
-	"github.com/oktavarium/go-gauger/internal/shared"
 )
 
 type storage struct {
@@ -48,91 +44,6 @@ func NewStorage(filename string, restore bool, timeout int) (*storage, error) {
 	}
 
 	return s, nil
-}
-
-func (s *storage) SaveGauge(ctx context.Context, name string, val float64) error {
-	s.gauge[name] = val
-	if s.sync {
-		return s.save()
-	}
-	return nil
-}
-
-func (s *storage) UpdateCounter(ctx context.Context, name string, val int64) (int64, error) {
-	s.counter[name] += val
-	if s.sync {
-		err := s.save()
-		if err != nil {
-			return 0, fmt.Errorf("failed to update counter: %w", err)
-		}
-	}
-	return s.counter[name], nil
-}
-
-func (s *storage) GetGauger(ctx context.Context, name string) (float64, bool) {
-	val, ok := s.gauge[name]
-	return val, ok
-}
-
-func (s *storage) GetCounter(ctx context.Context, name string) (int64, bool) {
-	val, ok := s.counter[name]
-	return val, ok
-}
-
-func (s *storage) GetAll(ctx context.Context) ([]byte, error) {
-	allMetrics := make([]shared.Metric, 0, len(s.gauge)+len(s.counter))
-	var buffer bytes.Buffer
-	encoder := json.NewEncoder(&buffer)
-
-	for k, v := range s.gauge {
-		allMetrics = append(allMetrics, shared.NewGaugeMetric(k, &v))
-
-	}
-	for k, v := range s.counter {
-		allMetrics = append(allMetrics, shared.NewCounterMetric(k, &v))
-	}
-	for _, v := range allMetrics {
-		err := encoder.Encode(&v)
-		if err != nil {
-			return nil, fmt.Errorf("error on encoding data: %w", err)
-		}
-	}
-	return buffer.Bytes(), nil
-}
-
-func (s *storage) restore() error {
-	data, err := s.archive.Restore()
-	if err != nil {
-		return fmt.Errorf("error on restoring archive: %w", err)
-	}
-	scanner := bufio.NewScanner(bytes.NewReader(data))
-	for scanner.Scan() {
-		var metrics shared.Metric
-		err := json.Unmarshal(scanner.Bytes(), &metrics)
-		if err != nil {
-			return fmt.Errorf("error on restoring archive: %w", err)
-		}
-		switch metrics.MType {
-		case string(shared.GaugeType):
-			s.SaveGauge(context.Background(), metrics.ID, *metrics.Value)
-		case string(shared.CounterType):
-			s.UpdateCounter(context.Background(), metrics.ID, *metrics.Delta)
-		}
-	}
-
-	return nil
-}
-
-func (s *storage) save() error {
-	data, err := s.GetAll(context.Background())
-	if err != nil {
-		return fmt.Errorf("error on saving all: %w", err)
-	}
-	err = s.archive.Save(data)
-	if err != nil {
-		return fmt.Errorf("error on saving all: %w", err)
-	}
-	return nil
 }
 
 func (s *storage) Ping(context.Context) error {

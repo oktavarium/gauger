@@ -1,6 +1,10 @@
 package storage
 
-import "context"
+import (
+	"context"
+
+	"github.com/oktavarium/go-gauger/internal/shared"
+)
 
 type Storage interface {
 	SaveGauge(context.Context, string, float64) error
@@ -9,4 +13,5 @@ type Storage interface {
 	GetCounter(context.Context, string) (int64, bool)
 	GetAll(context.Context) ([]byte, error)
 	Ping(context.Context) error
+	BatchUpdate(context.Context, []shared.Metric) error
 }
