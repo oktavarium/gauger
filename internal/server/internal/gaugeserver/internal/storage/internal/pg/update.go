@@ -3,17 +3,19 @@ package pg
 import (
 	"context"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func (s *storage) UpdateCounter(ctx context.Context, name string, val int64) (int64, error) {
-	tx, err := s.BeginTx(ctx, nil)
+	tx, err := s.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return 0, fmt.Errorf("error occured on opening tx: %w", err)
 	}
-	defer tx.Rollback()
+	defer tx.Rollback(ctx)
 
 	var newValue int64
-	row := tx.QueryRowContext(ctx, `
+	row := tx.QueryRow(ctx, `
 		INSERT INTO counter (name, value) VALUES ($1, $2)
 		ON CONFLICT (name) DO
 		UPDATE SET value = counter.value + $2
@@ -24,5 +26,5 @@ func (s *storage) UpdateCounter(ctx context.Context, name string, val int64) (in
 		return 0, fmt.Errorf("error occured on updating counter: %w", err)
 	}
 
-	return newValue, tx.Commit()
+	return newValue, tx.Commit(ctx)
 }

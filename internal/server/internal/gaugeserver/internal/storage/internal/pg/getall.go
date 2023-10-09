@@ -14,7 +14,7 @@ func (s *storage) GetAll(ctx context.Context) ([]byte, error) {
 	var buffer bytes.Buffer
 	encoder := json.NewEncoder(&buffer)
 
-	rows, err := s.QueryContext(ctx, "SELECT name, value FROM gauge")
+	rows, err := s.Query(ctx, "SELECT name, value FROM gauge")
 	if err != nil {
 		return nil, fmt.Errorf("error occured on selecting all gauge: %w", err)
 	}
@@ -32,7 +32,7 @@ func (s *storage) GetAll(ctx context.Context) ([]byte, error) {
 		return nil, fmt.Errorf("error occured on selecting all gauge: %w", err)
 	}
 
-	rows, err = s.QueryContext(ctx, "SELECT name, value FROM counter")
+	rows, err = s.Query(ctx, "SELECT name, value FROM counter")
 	if err != nil {
 		return nil, fmt.Errorf("error occured on selecting all counters: %w", err)
 	}

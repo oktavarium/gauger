@@ -2,25 +2,20 @@ package pg
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jackc/pgx/v5"
 )
 
 type storage struct {
-	*sql.DB
+	*pgx.Conn
 }
 
 func NewStorage(dsn string) (*storage, error) {
-	db, err := sql.Open("pgx", dsn)
+	ctx := context.Background()
+	db, err := pgx.Connect(ctx, dsn)
 	if err != nil {
 		return nil, err
-	}
-
-	err = db.Ping()
-	if err != nil {
-		return nil, fmt.Errorf("error occured on db ping when creating storage: %w", err)
 	}
 
 	s := &storage{
@@ -36,7 +31,7 @@ func NewStorage(dsn string) (*storage, error) {
 }
 
 func (s *storage) Ping(ctx context.Context) error {
-	err := s.PingContext(ctx)
+	err := s.Ping(ctx)
 	if err != nil {
 		return fmt.Errorf("error occured on checking postgresql connection: %w", err)
 	}
