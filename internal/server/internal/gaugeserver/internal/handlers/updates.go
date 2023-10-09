@@ -26,9 +26,11 @@ func (h *Handler) UpdatesHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.storage.BatchUpdate(r.Context(), w, metrics)
+	err := h.storage.BatchUpdate(r.Context(), metrics)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusAccepted)
 }
