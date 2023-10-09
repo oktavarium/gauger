@@ -2,21 +2,33 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
 	"github.com/oktavarium/go-gauger/internal/shared"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
+	var err error
+	defer func() {
+		if err != nil {
+			logger.Logger().Info("error",
+				zap.String("func", "UpdateHandle"),
+				zap.Error(err),
+			)
+		}
+	}()
+
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	metricType := strings.ToLower(chi.URLParam(r, "type"))
 	metricName := strings.ToLower(chi.URLParam(r, "name"))
 	metricValueStr := chi.URLParam(r, "value")
 
-	var err error
 	switch metricType {
 	case shared.GaugeType:
 		var val float64
@@ -50,6 +62,16 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
+	var err error
+	defer func() {
+		if err != nil {
+			logger.Logger().Info("error",
+				zap.String("func", "UpdateJSONHandle"),
+				zap.Error(err),
+			)
+		}
+	}()
+
 	w.Header().Set("Content-Type", "application/json")
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusUnsupportedMediaType)
@@ -58,7 +80,7 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 
 	var metric shared.Metric
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&metric)
+	err = decoder.Decode(&metric)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -66,6 +88,7 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 
 	// checking metric name
 	if len(metric.ID) == 0 {
+		err = fmt.Errorf("empty metric id received")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}

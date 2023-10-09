@@ -2,12 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
 	"github.com/oktavarium/go-gauger/internal/shared"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +45,16 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
+	var err error
+	defer func() {
+		if err != nil {
+			logger.Logger().Info("error",
+				zap.String("func", "ValueJSONHandle"),
+				zap.Error(err),
+			)
+		}
+	}()
+
 	w.Header().Set("Content-Type", "application/json")
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusUnsupportedMediaType)
@@ -50,7 +63,7 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 
 	var metric shared.Metric
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&metric)
+	err = decoder.Decode(&metric)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -58,6 +71,7 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 
 	// checking metric name
 	if len(metric.ID) == 0 {
+		err = fmt.Errorf("empty metric id received")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
