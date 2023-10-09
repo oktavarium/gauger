@@ -60,7 +60,7 @@ func (s *storage) batchUpdate(ctx context.Context, gauge []shared.Metric, counte
 		UPDATE SET value = $2
 	`
 	for _, v := range gauge {
-		gaugeBatch.Queue(gaugeQuery, v.ID, *v.Value)
+		gaugeBatch.Queue(gaugeQuery, v.ID, v.Value)
 	}
 
 	err = s.SendBatch(ctx, &gaugeBatch).Close()
@@ -74,8 +74,8 @@ func (s *storage) batchUpdate(ctx context.Context, gauge []shared.Metric, counte
 		ON CONFLICT (name) DO
 		UPDATE SET value = counter.value + $2
 	`
-	for _, v := range gauge {
-		counterBatch.Queue(counterQuery, v.ID, *v.Delta)
+	for _, v := range counter {
+		counterBatch.Queue(counterQuery, v.ID, v.Delta)
 	}
 
 	err = s.SendBatch(ctx, &counterBatch).Close()
