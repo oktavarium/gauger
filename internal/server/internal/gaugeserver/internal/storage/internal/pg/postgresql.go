@@ -29,12 +29,3 @@ func NewStorage(dsn string) (*storage, error) {
 
 	return s, nil
 }
-
-func (s *storage) Ping(ctx context.Context) error {
-	err := s.Ping(ctx)
-	if err != nil {
-		return fmt.Errorf("error occured on checking postgresql connection: %w", err)
-	}
-
-	return nil
-}
