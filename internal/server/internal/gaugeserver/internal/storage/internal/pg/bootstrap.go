@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS
 gauge
 (
 	id SERIAL PRIMARY KEY,
-	name TEXT,
+	name TEXT UNIQUE,
 	value DOUBLE PRECISION
 );
 
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS
 counter
 (
 	id SERIAL PRIMARY KEY,
- 	name TEXT,
+ 	name TEXT UNIQUE,
  	value BIGINT
 );
 `
