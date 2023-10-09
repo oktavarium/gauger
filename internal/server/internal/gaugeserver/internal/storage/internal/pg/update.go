@@ -16,7 +16,7 @@ func (s *storage) UpdateCounter(ctx context.Context, name string, val int64) (in
 	row := tx.QueryRowContext(ctx, `
 		INSERT INTO counter (name, value) VALUES ($1, $2)
 		ON CONFLICT (name) DO
-		UPDATE SET value = counter.value + %2
+		UPDATE SET value = counter.value + $2
 		RETURNING value`, name, val)
 
 	err = row.Scan(&newValue)
