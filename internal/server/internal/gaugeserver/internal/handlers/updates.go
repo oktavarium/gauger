@@ -32,5 +32,13 @@ func (h *Handler) UpdatesHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	metricStab := shared.Metric{}
+	encoder := json.NewEncoder(w)
+	err = encoder.Encode(metricStab)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusAccepted)
 }
