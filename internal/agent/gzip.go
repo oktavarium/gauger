@@ -9,18 +9,15 @@ import (
 	"github.com/oktavarium/go-gauger/internal/shared"
 )
 
-func compressMetrics(metrics shared.Metric) ([]byte, error) {
-	jsonRaw, err := json.Marshal(metrics)
-	if err != nil {
-		return nil, fmt.Errorf("error on marshaling metrics: %w", err)
-	}
+func compressMetrics(metrics []shared.Metric) ([]byte, error) {
 	var compressedJSON bytes.Buffer
 	wr := gzip.NewWriter(&compressedJSON)
 
-	_, err = wr.Write(jsonRaw)
-	if err != nil {
-		return nil, fmt.Errorf("error on compressing data: %w", err)
+	encoder := json.NewEncoder(wr)
+	if err := encoder.Encode(metrics); err != nil {
+		return nil, fmt.Errorf("error occured on encoding metric: %w", err)
 	}
+
 	wr.Close()
 	return compressedJSON.Bytes(), nil
 }

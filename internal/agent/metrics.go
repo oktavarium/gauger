@@ -11,7 +11,7 @@ import (
 	"github.com/oktavarium/go-gauger/internal/shared"
 )
 
-const updatePath string = "update"
+const updatePath string = "updates"
 
 type metrics struct {
 	gauges   map[string]float64
@@ -71,17 +71,14 @@ func reportMetrics(address string, m *metrics) error {
 		allMetrics = append(allMetrics, shared.NewCounterMetric(k, &v))
 	}
 
-	for _, metric := range allMetrics {
-		err := makeUpdateRequest(fmt.Sprintf("%s/%s/", address, updatePath), metric)
-		if err != nil {
-			return fmt.Errorf("error on making update request: %w", err)
-		}
+	if err := makeBatchUpdateRequest(fmt.Sprintf("%s/%s/", address, updatePath), allMetrics); err != nil {
+		return fmt.Errorf("error on making batchupdate request: %w", err)
 	}
 
 	return nil
 }
 
-func makeUpdateRequest(endpoint string, metrics shared.Metric) error {
+func makeBatchUpdateRequest(endpoint string, metrics []shared.Metric) error {
 	var metricsResponse shared.Metric
 	compressedMetrics, err := compressMetrics(metrics)
 	if err != nil {

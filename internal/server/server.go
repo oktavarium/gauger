@@ -18,7 +18,8 @@ func Run() error {
 	gs, err := gaugeserver.NewGaugerServer(flagsConfig.Address,
 		flagsConfig.FilePath,
 		flagsConfig.Restore,
-		flagsConfig.StoreInterval)
+		flagsConfig.StoreInterval,
+		flagsConfig.DatabaseDSN)
 	if err != nil {
 		return fmt.Errorf("error on creating gaugeserver: %w", err)
 	}

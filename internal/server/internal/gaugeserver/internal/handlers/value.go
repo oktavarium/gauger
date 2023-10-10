@@ -2,12 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
 	"github.com/oktavarium/go-gauger/internal/shared"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +21,7 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 	var valStr string
 	switch metricType {
 	case shared.GaugeType:
-		val, ok := h.storage.GetGauger(metricName)
+		val, ok := h.storage.GetGauger(r.Context(), metricName)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -26,7 +29,7 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 		valStr = strconv.FormatFloat(val, 'f', -1, 64)
 
 	case shared.CounterType:
-		val, ok := h.storage.GetCounter(metricName)
+		val, ok := h.storage.GetCounter(r.Context(), metricName)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -42,6 +45,16 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
+	var err error
+	defer func() {
+		if err != nil {
+			logger.Logger().Info("error",
+				zap.String("func", "ValueJSONHandle"),
+				zap.Error(err),
+			)
+		}
+	}()
+
 	w.Header().Set("Content-Type", "application/json")
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusUnsupportedMediaType)
@@ -50,7 +63,7 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 
 	var metric shared.Metric
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&metric)
+	err = decoder.Decode(&metric)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -58,13 +71,14 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 
 	// checking metric name
 	if len(metric.ID) == 0 {
+		err = fmt.Errorf("empty metric id received")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	switch metric.MType {
 	case shared.GaugeType:
-		val, ok := h.storage.GetGauger(metric.ID)
+		val, ok := h.storage.GetGauger(r.Context(), metric.ID)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -72,13 +86,13 @@ func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 		metric.Value = &val
 
 	case shared.CounterType:
-		val, ok := h.storage.GetCounter(metric.ID)
+		val, ok := h.storage.GetCounter(r.Context(), metric.ID)
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-    metric.Delta = &val
+		metric.Delta = &val
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)

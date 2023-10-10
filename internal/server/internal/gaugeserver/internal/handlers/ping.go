@@ -7,21 +7,20 @@ import (
 	"go.uber.org/zap"
 )
 
-func (h *Handler) GetHandle(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) PingHandle(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {
 		if err != nil {
 			logger.Logger().Info("error",
-				zap.String("func", "GetHandle"),
+				zap.String("func", "PingHandle"),
 				zap.Error(err),
 			)
 		}
 	}()
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	data, err := h.storage.GetAll(r.Context())
+	err = h.storage.Ping(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.Write(data)
+	w.WriteHeader(http.StatusOK)
 }
