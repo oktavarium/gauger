@@ -15,6 +15,7 @@ type config struct {
 	FilePath      string `env:"FILE_STORAGE_PATH"`
 	Restore       bool   `env:"RESTORE"`
 	DatabaseDSN   string `env:"DATABASE_DSN"`
+	HashKey       string `env:"KEY"`
 }
 
 func loadConfig() (config, error) {
@@ -31,6 +32,8 @@ func loadConfig() (config, error) {
 		"restore metrics")
 	flag.StringVar(&flagsConfig.DatabaseDSN, "d", "",
 		"database connection string")
+	flag.StringVar(&flagsConfig.HashKey, "k", "",
+		"key for hash")
 	flag.Parse()
 
 	if err := env.Parse(&flagsConfig); err != nil {

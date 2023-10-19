@@ -61,7 +61,7 @@ func readMetrics(m *metrics) {
 	m.counters["PollCount"]++
 }
 
-func reportMetrics(address string, m *metrics) error {
+func reportMetrics(address string, key string, m *metrics) error {
 	allMetrics := make([]shared.Metric, 0, len(m.gauges)+len(m.counters))
 	for k, v := range m.gauges {
 		allMetrics = append(allMetrics, shared.NewGaugeMetric(k, &v))
@@ -71,25 +71,31 @@ func reportMetrics(address string, m *metrics) error {
 		allMetrics = append(allMetrics, shared.NewCounterMetric(k, &v))
 	}
 
-	if err := makeBatchUpdateRequest(fmt.Sprintf("%s/%s/", address, updatePath), allMetrics); err != nil {
+	if err := makeBatchUpdateRequest(fmt.Sprintf("%s/%s/", address, updatePath), key, allMetrics); err != nil {
 		return fmt.Errorf("error on making batchupdate request: %w", err)
 	}
 
 	return nil
 }
 
-func makeBatchUpdateRequest(endpoint string, metrics []shared.Metric) error {
+func makeBatchUpdateRequest(endpoint string, key string, metrics []shared.Metric) error {
 	var metricsResponse shared.Metric
 	compressedMetrics, err := compressMetrics(metrics)
 	if err != nil {
 		return fmt.Errorf("error on compressing metrics on request: %w", err)
 	}
 
+	hashedMetrics, err := hashData([]byte(key), compressedMetrics)
+	if err != nil {
+		return fmt.Errorf("error occured in calculating hmac: %w", err)
+	}
+	fmt.Println(string(compressedMetrics), string(hashedMetrics))
 	client := resty.New()
 	resp, err := client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Content-Encoding", "gzip").
 		SetHeader("Accept-Encoding", "gzip").
+		SetHeader("HashSHA256", string(hashedMetrics)).
 		SetBody(compressedMetrics).
 		SetResult(&metricsResponse).
 		Post(endpoint)

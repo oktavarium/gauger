@@ -22,7 +22,7 @@ func Run() error {
 			readMetrics(&metrics)
 		}
 		if sleepCounter%flagsConfig.ReportInterval == 0 {
-			if err := reportMetrics(flagsConfig.Address, &metrics); err != nil {
+			if err := reportMetrics(flagsConfig.Address, flagsConfig.HashKey, &metrics); err != nil {
 				log.Printf("failed to report metrics: %v", err)
 				continue
 			}

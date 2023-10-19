@@ -12,6 +12,7 @@ type config struct {
 	Address        string `env:"ADDRESS"`
 	ReportInterval int    `env:"REPORT_INTERVAL"`
 	PollInterval   int    `env:"POLL_INTERVAL"`
+	HashKey        string `env:"KEY"`
 }
 
 func loadConfig() (config, error) {
@@ -22,6 +23,8 @@ func loadConfig() (config, error) {
 		"report interval in seconds")
 	flag.IntVar(&flagsConfig.PollInterval, "p", 2,
 		"poll interval in seconds")
+	flag.StringVar(&flagsConfig.HashKey, "k", "",
+		"key for hash")
 	flag.Parse()
 
 	if err := env.Parse(&flagsConfig); err != nil {
