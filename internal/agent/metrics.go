@@ -89,13 +89,16 @@ func makeBatchUpdateRequest(endpoint string, key string, metrics []shared.Metric
 	request := client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Content-Encoding", "gzip").
-		SetHeader("Accept-Encoding", "gzip").
-		SetBody(compressedMetrics).
-		SetResult(&metricsResponse)
+		SetHeader("Accept-Encoding", "gzip")
+
 	if len(key) != 0 {
 		request = request.SetHeader("HashSHA256",
 			hashData([]byte(key), compressedMetrics))
 	}
+
+	request = request.
+		SetBody(compressedMetrics).
+		SetResult(&metricsResponse)
 
 	resp, err := request.Post(endpoint)
 
