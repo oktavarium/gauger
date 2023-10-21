@@ -21,7 +21,8 @@ func NewGaugerServer(addr string,
 	filename string,
 	restore bool,
 	timeout int,
-	dsn string) (*GaugerServer, error) {
+	dsn string,
+	key string) (*GaugerServer, error) {
 	server := &GaugerServer{
 		router: chi.NewRouter(),
 		addr:   addr,
@@ -41,7 +42,9 @@ func NewGaugerServer(addr string,
 
 	server.router.Use(logger.LoggerMiddleware)
 	server.router.Use(gzip.GzipMiddleware)
-	server.router.Use(hash.HashMiddleware)
+	if len(key) > 0 {
+		server.router.Use(hash.HashMiddleware([]byte(key)))
+	}
 	server.router.Get("/", handler.GetHandle)
 	server.router.Get("/ping", handler.PingHandle)
 	server.router.Post("/update/", handler.UpdateJSONHandle)
