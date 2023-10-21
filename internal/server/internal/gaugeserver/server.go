@@ -42,7 +42,7 @@ func NewGaugerServer(addr string,
 
 	server.router.Use(logger.LoggerMiddleware)
 	server.router.Use(gzip.GzipMiddleware)
-	if len(key) > 0 {
+	if len(key) != 0 {
 		server.router.Use(hash.HashMiddleware([]byte(key)))
 	}
 	server.router.Get("/", handler.GetHandle)

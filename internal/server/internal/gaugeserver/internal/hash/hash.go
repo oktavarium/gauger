@@ -71,7 +71,8 @@ func checkHash(key []byte, reader io.Reader, hash string) error {
 func HashMiddleware(key []byte) func(http.Handler) http.Handler {
 	nextF := func(next http.Handler) http.Handler {
 		hf := func(w http.ResponseWriter, r *http.Request) {
-			clientHash := r.Header.Get("HashSHA256")
+			clientHash := r.Header.Get("Hashsha256")
+			fmt.Println(clientHash, r.Header)
 			if len(clientHash) == 0 {
 				logger.Logger().Info("error",
 					zap.String("func", "HashMiddleware"),

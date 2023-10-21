@@ -85,20 +85,19 @@ func makeBatchUpdateRequest(endpoint string, key string, metrics []shared.Metric
 		return fmt.Errorf("error on compressing metrics on request: %w", err)
 	}
 
-	hashedMetrics, err := hashData([]byte(key), compressedMetrics)
-	if err != nil {
-		return fmt.Errorf("error occured in calculating hmac: %w", err)
-	}
-	fmt.Println(string(compressedMetrics), string(hashedMetrics))
 	client := resty.New()
-	resp, err := client.R().
+	request := client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Content-Encoding", "gzip").
 		SetHeader("Accept-Encoding", "gzip").
-		SetHeader("HashSHA256", string(hashedMetrics)).
 		SetBody(compressedMetrics).
-		SetResult(&metricsResponse).
-		Post(endpoint)
+		SetResult(&metricsResponse)
+	if len(key) != 0 {
+		request = request.SetHeader("HashSHA256",
+			hashData([]byte(key), compressedMetrics))
+	}
+
+	resp, err := request.Post(endpoint)
 
 	if err != nil {
 		return fmt.Errorf("error on making update request: %w", err)
