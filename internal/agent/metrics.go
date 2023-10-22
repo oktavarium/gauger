@@ -99,7 +99,6 @@ func makeBatchUpdateRequest(endpoint string, key string, metrics []shared.Metric
 	request = request.
 		SetBody(compressedMetrics).
 		SetResult(&metricsResponse)
-
 	resp, err := request.Post(endpoint)
 
 	if err != nil {

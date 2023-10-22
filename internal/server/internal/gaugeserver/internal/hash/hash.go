@@ -38,30 +38,19 @@ func (h *hashedWriter) WriteHeader(statusCode int) {
 	h.w.WriteHeader(statusCode)
 }
 
-func (h *hashedWriter) hash() (string, error) {
+func (h *hashedWriter) hash() string {
 	return hashData(h.k, h.b.Bytes())
 }
 
-func hashData(key []byte, data []byte) (string, error) {
-	if len(key) == 0 {
-		return hex.EncodeToString(data), nil
-	}
-
+func hashData(key []byte, data []byte) string {
 	mac := hmac.New(sha256.New, key)
 	mac.Write(data)
 	hashedData := mac.Sum(nil)
-	return hex.EncodeToString(hashedData), nil
+	return hex.EncodeToString(hashedData)
 }
 
-func checkHash(key []byte, reader io.Reader, hash string) error {
-	clientHashBytes, err := io.ReadAll(reader)
-	if err != nil {
-		return fmt.Errorf("error occured on reading from io.Reader: %w", err)
-	}
-	clientHash, err := hashData(key, clientHashBytes)
-	if err != nil {
-		return fmt.Errorf("error occured on calculating hash: %w", err)
-	}
+func checkHash(key []byte, data []byte, hash string) error {
+	clientHash := hashData(key, data)
 	if clientHash != hash {
 		return fmt.Errorf("hashes are not equal")
 	}
@@ -71,35 +60,35 @@ func checkHash(key []byte, reader io.Reader, hash string) error {
 func HashMiddleware(key []byte) func(http.Handler) http.Handler {
 	nextF := func(next http.Handler) http.Handler {
 		hf := func(w http.ResponseWriter, r *http.Request) {
-			clientHash := r.Header.Get("Hashsha256")
-			fmt.Println(clientHash, r.Header)
-			if len(clientHash) == 0 {
-				logger.Logger().Info("error",
-					zap.String("func", "HashMiddleware"),
-					zap.String("msg", "empty hash"))
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
+			if _, ok := r.Header["Hashsha256"]; ok {
+				body, err := io.ReadAll(r.Body)
+				if err != nil {
+					logger.Logger().Info("error",
+						zap.String("func", "HashMiddleware"),
+						zap.Error(err))
 
-			err := checkHash(key, r.Body, clientHash)
-			if err != nil {
-				logger.Logger().Info("error",
-					zap.String("func", "HashMiddleware"),
-					zap.Error(err))
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
 
-				w.WriteHeader(http.StatusBadRequest)
-				return
+				r.Body = io.NopCloser(bytes.NewReader(body))
+
+				err = checkHash(key, body, r.Header.Get("Hashsha256"))
+				if err != nil {
+					logger.Logger().Info("error",
+						zap.String("func", "HashMiddleware"),
+						zap.Error(err))
+
+					w.WriteHeader(http.StatusBadRequest)
+					return
+				}
 			}
 
 			hashedWriter := newHashedWriter(w, key)
 
 			next.ServeHTTP(hashedWriter, r)
 
-			hash, err := hashedWriter.hash()
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
+			hash := hashedWriter.hash()
 			hashedWriter.Header().Set("HashSHA256", hash)
 		}
 		return http.HandlerFunc(hf)
