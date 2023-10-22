@@ -13,6 +13,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const HashHeader = "Hashsha256"
+
 type hashedWriter struct {
 	w  http.ResponseWriter
 	mw io.Writer
@@ -60,7 +62,7 @@ func checkHash(key []byte, data []byte, hash string) error {
 func HashMiddleware(key []byte) func(http.Handler) http.Handler {
 	nextF := func(next http.Handler) http.Handler {
 		hf := func(w http.ResponseWriter, r *http.Request) {
-			if _, ok := r.Header["Hashsha256"]; ok {
+			if _, ok := r.Header[HashHeader]; ok {
 				body, err := io.ReadAll(r.Body)
 				if err != nil {
 					logger.Logger().Info("error",
@@ -73,7 +75,7 @@ func HashMiddleware(key []byte) func(http.Handler) http.Handler {
 
 				r.Body = io.NopCloser(bytes.NewReader(body))
 
-				err = checkHash(key, body, r.Header.Get("Hashsha256"))
+				err = checkHash(key, body, r.Header.Get(HashHeader))
 				if err != nil {
 					logger.Logger().Info("error",
 						zap.String("func", "HashMiddleware"),
@@ -89,7 +91,7 @@ func HashMiddleware(key []byte) func(http.Handler) http.Handler {
 			next.ServeHTTP(hashedWriter, r)
 
 			hash := hashedWriter.hash()
-			hashedWriter.Header().Set("HashSHA256", hash)
+			hashedWriter.Header().Set(HashHeader, hash)
 		}
 		return http.HandlerFunc(hf)
 	}
