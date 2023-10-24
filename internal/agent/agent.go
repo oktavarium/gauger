@@ -1,10 +1,12 @@
 package agent
 
 import (
+	"context"
 	"fmt"
+	"sync"
 	"time"
 
-	"log"
+	"golang.org/x/sync/errgroup"
 )
 
 func Run() error {
@@ -13,19 +15,52 @@ func Run() error {
 		return fmt.Errorf("error on loading config: %w", err)
 	}
 
-	metrics := NewMetrics()
-	var sleepCounter int
-	for {
-		time.Sleep(1 * time.Second)
-		sleepCounter++
-		if sleepCounter%flagsConfig.PollInterval == 0 {
-			readMetrics(&metrics)
-		}
-		if sleepCounter%flagsConfig.ReportInterval == 0 {
-			if err := reportMetrics(flagsConfig.Address, flagsConfig.HashKey, &metrics); err != nil {
-				log.Printf("failed to report metrics: %v", err)
-				continue
-			}
-		}
+	eg := new(errgroup.Group)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	chMetrics := collector(
+		ctx,
+		readMetrics,
+		eg, time.Duration(flagsConfig.PollInterval*time.Second))
+	chPsMetrics := collector(
+		ctx,
+		readPsMetrics,
+		eg, time.Duration(flagsConfig.PollInterval*time.Second))
+
+	unitedCh := fanIn(chMetrics, chPsMetrics)
+	for i := 0; i < flagsConfig.RateLimit; i++ {
+		go sender(ctx, flagsConfig.Address, flagsConfig.HashKey,
+			eg, flagsConfig.ReportInterval, unitedCh)
 	}
+
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func fanIn(chs ...chan []byte) chan []byte {
+	chOut := make(chan []byte, len(chs))
+	var wg sync.WaitGroup
+	wg.Add(len(chs))
+
+	output := func(ch chan []byte) {
+		for v := range ch {
+			chOut <- v
+		}
+		wg.Done()
+	}
+
+	for _, ch := range chs {
+		go output(ch)
+	}
+
+	go func() {
+		wg.Wait()
+		close(chOut)
+	}()
+
+	return chOut
 }

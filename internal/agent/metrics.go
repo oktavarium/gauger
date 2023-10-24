@@ -1,17 +1,16 @@
 package agent
 
 import (
-	"errors"
-	"fmt"
+	"context"
 	"math/rand"
-	"net/http"
 	"runtime"
+	"time"
 
-	"github.com/go-resty/resty/v2"
 	"github.com/oktavarium/go-gauger/internal/shared"
+	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/mem"
+	"golang.org/x/sync/errgroup"
 )
-
-const updatePath string = "updates"
 
 type metrics struct {
 	gauges   map[string]float64
@@ -25,7 +24,7 @@ func NewMetrics() metrics {
 	}
 }
 
-func readMetrics(m *metrics) {
+func readMetrics(m metrics) error {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
 
@@ -59,9 +58,30 @@ func readMetrics(m *metrics) {
 	m.gauges["RandomValue"] = rand.Float64()
 
 	m.counters["PollCount"]++
+
+	return nil
 }
 
-func reportMetrics(address string, key string, m *metrics) error {
+func readPsMetrics(m metrics) error {
+	vm, err := mem.VirtualMemory()
+	if err != nil {
+		return err
+	}
+
+	m.gauges["TotalMemory"] = float64(vm.Total)
+	m.gauges["FreeMemory"] = float64(vm.Free)
+
+	cpu, err := cpu.Percent(0, true)
+	if err != nil {
+		return err
+	}
+
+	m.gauges["CPUutilization1"] = float64(cpu[0])
+
+	return nil
+}
+
+func packMetrics(m metrics) ([]byte, error) {
 	allMetrics := make([]shared.Metric, 0, len(m.gauges)+len(m.counters))
 	for k, v := range m.gauges {
 		allMetrics = append(allMetrics, shared.NewGaugeMetric(k, &v))
@@ -71,43 +91,37 @@ func reportMetrics(address string, key string, m *metrics) error {
 		allMetrics = append(allMetrics, shared.NewCounterMetric(k, &v))
 	}
 
-	if err := makeBatchUpdateRequest(fmt.Sprintf("%s/%s/", address, updatePath), key, allMetrics); err != nil {
-		return fmt.Errorf("error on making batchupdate request: %w", err)
-	}
+	compressedMetrics, err := compressMetrics(allMetrics)
 
-	return nil
+	return compressedMetrics, err
 }
 
-func makeBatchUpdateRequest(endpoint string, key string, metrics []shared.Metric) error {
-	var metricsResponse shared.Metric
-	compressedMetrics, err := compressMetrics(metrics)
-	if err != nil {
-		return fmt.Errorf("error on compressing metrics on request: %w", err)
-	}
+func collector(ctx context.Context,
+	collect func(metrics) error,
+	eg *errgroup.Group,
+	d time.Duration) chan []byte {
 
-	client := resty.New()
-	request := client.R().
-		SetHeader("Content-Type", "application/json").
-		SetHeader("Content-Encoding", "gzip").
-		SetHeader("Accept-Encoding", "gzip")
+	chOut := make(chan []byte)
+	metrics := NewMetrics()
+	ticker := time.NewTicker(d)
 
-	if len(key) != 0 {
-		request = request.SetHeader("HashSHA256",
-			hashData([]byte(key), compressedMetrics))
-	}
+	eg.Go(func() error {
+		defer close(chOut)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				readMetrics(metrics)
+				packedMatrics, err := packMetrics(metrics)
+				if err != nil {
+					return err
+				}
+				chOut <- packedMatrics
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	})
 
-	request = request.
-		SetBody(compressedMetrics).
-		SetResult(&metricsResponse)
-	resp, err := request.Post(endpoint)
-
-	if err != nil {
-		return fmt.Errorf("error on making update request: %w", err)
-	}
-
-	if resp.StatusCode() != http.StatusOK {
-		return errors.New("response status code is not OK (200)")
-	}
-
-	return nil
+	return chOut
 }
