@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-resty/resty/v2"
 	"github.com/oktavarium/go-gauger/internal/shared"
-	"golang.org/x/sync/errgroup"
 )
 
 const updatePath string = "updates"
@@ -48,17 +47,10 @@ func reportMetrics(address string, key string, metrics []byte) error {
 func sender(ctx context.Context,
 	address string,
 	key string,
-	eg *errgroup.Group,
 	d time.Duration,
 	inCh chan []byte) {
 
-	eg.Go(func() error {
-		for v := range inCh {
-			err := reportMetrics(address, key, v)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	for v := range inCh {
+		reportMetrics(address, key, v)
+	}
 }

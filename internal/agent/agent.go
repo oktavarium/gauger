@@ -15,23 +15,21 @@ func Run() error {
 		return fmt.Errorf("error on loading config: %w", err)
 	}
 
-	eg := new(errgroup.Group)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	eg, egCtx := errgroup.WithContext(context.Background())
 
 	chMetrics := collector(
-		ctx,
+		egCtx,
 		readMetrics,
 		eg, time.Duration(flagsConfig.PollInterval*time.Second))
 	chPsMetrics := collector(
-		ctx,
+		egCtx,
 		readPsMetrics,
 		eg, time.Duration(flagsConfig.PollInterval*time.Second))
 
 	unitedCh := fanIn(chMetrics, chPsMetrics)
 	for i := 0; i < flagsConfig.RateLimit; i++ {
-		go sender(ctx, flagsConfig.Address, flagsConfig.HashKey,
-			eg, flagsConfig.ReportInterval, unitedCh)
+		go sender(egCtx, flagsConfig.Address, flagsConfig.HashKey,
+			flagsConfig.ReportInterval, unitedCh)
 	}
 
 	if err := eg.Wait(); err != nil {
