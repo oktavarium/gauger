@@ -84,10 +84,12 @@ func readPsMetrics(m metrics) error {
 func packMetrics(m metrics) ([]byte, error) {
 	allMetrics := make([]shared.Metric, 0, len(m.gauges)+len(m.counters))
 	for k, v := range m.gauges {
+		v := v
 		allMetrics = append(allMetrics, shared.NewGaugeMetric(k, &v))
 	}
 
 	for k, v := range m.counters {
+		v := v
 		allMetrics = append(allMetrics, shared.NewCounterMetric(k, &v))
 	}
 
@@ -111,7 +113,7 @@ func collector(ctx context.Context,
 		for {
 			select {
 			case <-ticker.C:
-				readMetrics(metrics)
+				collect(metrics)
 				packedMatrics, err := packMetrics(metrics)
 				if err != nil {
 					return err
