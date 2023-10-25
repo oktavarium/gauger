@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgerrcode"
@@ -14,6 +15,7 @@ import (
 
 var retry = 3
 var delays = []time.Duration{1 * time.Second, 3 * time.Second, 5 * time.Second}
+var m sync.Mutex
 
 func (s *storage) BatchUpdate(ctx context.Context, metrics []shared.Metric) error {
 	var gauge []shared.Metric
@@ -47,7 +49,10 @@ func (s *storage) BatchUpdate(ctx context.Context, metrics []shared.Metric) erro
 }
 
 func (s *storage) batchUpdate(ctx context.Context, gauge []shared.Metric, counter []shared.Metric) error {
-	tx, err := s.BeginTx(ctx, pgx.TxOptions{})
+	m.Lock()
+	defer m.Unlock()
+
+	tx, err := s.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
 	if err != nil {
 		return fmt.Errorf("error occured on creating tx on batchupdate: %w", err)
 	}
@@ -59,6 +64,7 @@ func (s *storage) batchUpdate(ctx context.Context, gauge []shared.Metric, counte
 		ON CONFLICT (name) DO
 		UPDATE SET value = $2
 	`
+
 	for _, v := range gauge {
 		gaugeBatch.Queue(gaugeQuery, v.ID, v.Value)
 	}
