@@ -63,7 +63,7 @@ func (s *storage) batchUpdate(ctx context.Context, gauge []shared.Metric, counte
 		gaugeBatch.Queue(gaugeQuery, v.ID, v.Value)
 	}
 
-	err = s.SendBatch(ctx, &gaugeBatch).Close()
+	err = tx.SendBatch(ctx, &gaugeBatch).Close()
 	if err != nil {
 		return fmt.Errorf("error occured on making batch gauge update: %w", err)
 	}
@@ -78,7 +78,7 @@ func (s *storage) batchUpdate(ctx context.Context, gauge []shared.Metric, counte
 		counterBatch.Queue(counterQuery, v.ID, v.Delta)
 	}
 
-	err = s.SendBatch(ctx, &counterBatch).Close()
+	err = tx.SendBatch(ctx, &counterBatch).Close()
 	if err != nil {
 		return fmt.Errorf("error occured on making batch counter update: %w", err)
 	}
