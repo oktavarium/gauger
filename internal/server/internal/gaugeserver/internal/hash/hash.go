@@ -16,7 +16,8 @@ import (
 const HashHeader = "Hashsha256"
 
 type hashedWriter struct {
-	w  http.ResponseWriter
+	http.ResponseWriter
+
 	mw io.Writer
 	b  *bytes.Buffer
 	k  []byte
@@ -28,16 +29,8 @@ func newHashedWriter(w http.ResponseWriter, key []byte) *hashedWriter {
 	return &hashedWriter{w, mw, b, key}
 }
 
-func (h *hashedWriter) Header() http.Header {
-	return h.w.Header()
-}
-
 func (h *hashedWriter) Write(data []byte) (int, error) {
 	return h.mw.Write(data)
-}
-
-func (h *hashedWriter) WriteHeader(statusCode int) {
-	h.w.WriteHeader(statusCode)
 }
 
 func (h *hashedWriter) hash() string {

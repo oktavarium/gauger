@@ -4,18 +4,19 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"time"
 
 	"github.com/caarlos0/env/v6"
 )
 
 type config struct {
-	Address       string `env:"ADDRESS"`
-	LogLevel      string `env:"LOGLEVEL"`
-	StoreInterval int    `env:"STORE_INTERVAL"`
-	FilePath      string `env:"FILE_STORAGE_PATH"`
-	Restore       bool   `env:"RESTORE"`
-	DatabaseDSN   string `env:"DATABASE_DSN"`
-	HashKey       string `env:"KEY"`
+	Address       string        `env:"ADDRESS"`
+	LogLevel      string        `env:"LOGLEVEL"`
+	StoreInterval time.Duration `env:"STORE_INTERVAL"`
+	FilePath      string        `env:"FILE_STORAGE_PATH"`
+	Restore       bool          `env:"RESTORE"`
+	DatabaseDSN   string        `env:"DATABASE_DSN"`
+	HashKey       string        `env:"KEY"`
 }
 
 func loadConfig() (config, error) {
@@ -24,7 +25,7 @@ func loadConfig() (config, error) {
 		"address and port of server in notaion address:port")
 	flag.StringVar(&flagsConfig.LogLevel, "l", "info",
 		"log level")
-	flag.IntVar(&flagsConfig.StoreInterval, "i", 300,
+	flag.DurationVar(&flagsConfig.StoreInterval, "i", 300*time.Second,
 		"store interval")
 	flag.StringVar(&flagsConfig.FilePath, "f", "/tmp/metrics-db.json",
 		"file storage path")

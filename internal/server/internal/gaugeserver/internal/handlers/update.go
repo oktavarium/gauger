@@ -99,7 +99,11 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 		err = h.storage.SaveGauge(r.Context(), metric.ID, *metric.Value)
 
 	case shared.CounterType:
-		delta, err = h.storage.UpdateCounter(r.Context(), metric.ID, *metric.Delta)
+		delta, err = h.storage.UpdateCounter(
+			r.Context(),
+			metric.ID,
+			*metric.Delta,
+		)
 		metric.Delta = &delta
 
 	default:

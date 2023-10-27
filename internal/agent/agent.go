@@ -20,11 +20,11 @@ func Run() error {
 	chMetrics := collector(
 		egCtx,
 		readMetrics,
-		eg, time.Duration(flagsConfig.PollInterval*time.Second))
+		eg, time.Duration(flagsConfig.PollInterval))
 	chPsMetrics := collector(
 		egCtx,
 		readPsMetrics,
-		eg, time.Duration(flagsConfig.PollInterval*time.Second))
+		eg, time.Duration(flagsConfig.PollInterval))
 
 	unitedCh := fanIn(chMetrics, chPsMetrics)
 	for i := 0; i < flagsConfig.RateLimit; i++ {
@@ -39,16 +39,16 @@ func Run() error {
 	return nil
 }
 
-func fanIn(chs ...chan []byte) chan []byte {
+func fanIn(chs ...<-chan []byte) <-chan []byte {
 	chOut := make(chan []byte, len(chs))
 	var wg sync.WaitGroup
 	wg.Add(len(chs))
 
-	output := func(ch chan []byte) {
+	output := func(ch <-chan []byte) {
+		defer wg.Done()
 		for v := range ch {
 			chOut <- v
 		}
-		wg.Done()
 	}
 
 	for _, ch := range chs {

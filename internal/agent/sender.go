@@ -24,8 +24,12 @@ func reportMetrics(address string, key string, metrics []byte) error {
 		SetHeader("Accept-Encoding", "gzip")
 
 	if len(key) != 0 {
-		request = request.SetHeader("HashSHA256",
-			hashData([]byte(key), metrics))
+		hash, err := hashData([]byte(key), metrics)
+		if err != nil {
+			return fmt.Errorf("error on hashin data: %w", err)
+		}
+
+		request = request.SetHeader("HashSHA256", hash)
 	}
 
 	request = request.
@@ -48,7 +52,7 @@ func sender(ctx context.Context,
 	address string,
 	key string,
 	d time.Duration,
-	inCh chan []byte) {
+	inCh <-chan []byte) {
 
 	for v := range inCh {
 		reportMetrics(address, key, v)

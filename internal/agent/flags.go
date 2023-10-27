@@ -21,9 +21,9 @@ func loadConfig() (config, error) {
 	var flagsConfig config
 	flag.StringVar(&flagsConfig.Address, "a", "localhost:8080",
 		"address and port of server's endpoint in notaion address:port")
-	flag.DurationVar(&flagsConfig.ReportInterval, "r", 10,
+	flag.DurationVar(&flagsConfig.ReportInterval, "r", 10*time.Second,
 		"report interval in seconds")
-	flag.DurationVar(&flagsConfig.PollInterval, "p", 2,
+	flag.DurationVar(&flagsConfig.PollInterval, "p", 2*time.Second,
 		"poll interval in seconds")
 	flag.StringVar(&flagsConfig.HashKey, "k", "",
 		"key for hash")

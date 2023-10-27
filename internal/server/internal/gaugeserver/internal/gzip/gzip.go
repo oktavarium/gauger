@@ -58,7 +58,10 @@ func (c *compressedReader) Read(data []byte) (int, error) {
 
 func (c *compressedReader) Close() error {
 	if err := c.r.Close(); err != nil {
-		return fmt.Errorf("error on closing reader in compressed reader: %w", err)
+		return fmt.Errorf(
+			"error on closing reader in compressed reader: %w",
+			err,
+		)
 	}
 	return c.zr.Close()
 }

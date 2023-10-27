@@ -5,7 +5,11 @@ import (
 	"fmt"
 )
 
-func (s *storage) SaveGauge(ctx context.Context, name string, val float64) error {
+func (s *storage) SaveGauge(
+	ctx context.Context,
+	name string,
+	val float64,
+) error {
 	s.gauge[name] = val
 	if s.sync {
 		return s.save()

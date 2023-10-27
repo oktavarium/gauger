@@ -7,7 +7,10 @@ import (
 	"github.com/oktavarium/go-gauger/internal/shared"
 )
 
-func (s *storage) BatchUpdate(ctx context.Context, metrics []shared.Metric) error {
+func (s *storage) BatchUpdate(
+	ctx context.Context,
+	metrics []shared.Metric,
+) error {
 	for _, v := range metrics {
 		switch v.MType {
 		case shared.GaugeType:

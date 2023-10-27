@@ -98,10 +98,12 @@ func packMetrics(m metrics) ([]byte, error) {
 	return compressedMetrics, err
 }
 
-func collector(ctx context.Context,
+func collector(
+	ctx context.Context,
 	collect func(metrics) error,
 	eg *errgroup.Group,
-	d time.Duration) chan []byte {
+	d time.Duration,
+) chan []byte {
 
 	chOut := make(chan []byte)
 	metrics := NewMetrics()

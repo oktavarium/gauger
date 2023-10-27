@@ -3,6 +3,7 @@ package gaugeserver
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/gzip"
@@ -20,7 +21,7 @@ type GaugerServer struct {
 func NewGaugerServer(addr string,
 	filename string,
 	restore bool,
-	timeout int,
+	timeout time.Duration,
 	dsn string,
 	key string) (*GaugerServer, error) {
 	server := &GaugerServer{

@@ -17,7 +17,11 @@ type storage struct {
 	sync    bool
 }
 
-func NewStorage(filename string, restore bool, timeout int) (*storage, error) {
+func NewStorage(
+	filename string,
+	restore bool,
+	timeout time.Duration,
+) (*storage, error) {
 	s := &storage{
 		gauge:   map[string]float64{},
 		counter: map[string]int64{},
@@ -29,14 +33,15 @@ func NewStorage(filename string, restore bool, timeout int) (*storage, error) {
 		err := s.restore()
 		if err != nil {
 			if !errors.Is(err, os.ErrNotExist) {
-				return nil, fmt.Errorf("failed to restore data from file: %w", err)
+				return nil,
+					fmt.Errorf("failed to restore data from file: %w", err)
 			}
 		}
 	}
 
 	if !s.sync {
 		go func() {
-			ticker := time.NewTicker(time.Duration(timeout) * time.Second)
+			ticker := time.NewTicker(timeout)
 			for range ticker.C {
 				s.save()
 			}

@@ -46,7 +46,11 @@ func (s *storage) BatchUpdate(ctx context.Context, metrics []shared.Metric) erro
 	}
 }
 
-func (s *storage) batchUpdate(ctx context.Context, gauge []shared.Metric, counter []shared.Metric) error {
+func (s *storage) batchUpdate(
+	ctx context.Context,
+	gauge []shared.Metric,
+	counter []shared.Metric,
+) error {
 	tx, err := s.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
 	if err != nil {
 		return fmt.Errorf("error occured on creating tx on batchupdate: %w", err)
