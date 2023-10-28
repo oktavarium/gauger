@@ -46,41 +46,40 @@ func (s *storage) BatchUpdate(ctx context.Context, metrics []shared.Metric) erro
 	}
 }
 
-func (s *storage) batchUpdate(ctx context.Context, gauge []shared.Metric, counter []shared.Metric) error {
-	tx, err := s.BeginTx(ctx, pgx.TxOptions{})
+func (s *storage) batchUpdate(
+	ctx context.Context,
+	gauge []shared.Metric,
+	counter []shared.Metric,
+) error {
+	tx, err := s.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
 	if err != nil {
 		return fmt.Errorf("error occured on creating tx on batchupdate: %w", err)
 	}
 	defer tx.Rollback(ctx)
 
-	gaugeBatch := pgx.Batch{}
+	batch := pgx.Batch{}
 	gaugeQuery := `
 		INSERT INTO gauge (name, value) VALUES ($1, $2)
 		ON CONFLICT (name) DO
 		UPDATE SET value = $2
 	`
+
 	for _, v := range gauge {
-		gaugeBatch.Queue(gaugeQuery, v.ID, v.Value)
+		batch.Queue(gaugeQuery, v.ID, *v.Value)
 	}
 
-	err = s.SendBatch(ctx, &gaugeBatch).Close()
-	if err != nil {
-		return fmt.Errorf("error occured on making batch gauge update: %w", err)
-	}
-
-	counterBatch := pgx.Batch{}
 	counterQuery := `
 		INSERT INTO counter (name, value) VALUES ($1, $2)
 		ON CONFLICT (name) DO
 		UPDATE SET value = counter.value + $2
 	`
 	for _, v := range counter {
-		counterBatch.Queue(counterQuery, v.ID, v.Delta)
+		batch.Queue(counterQuery, v.ID, v.Delta)
 	}
 
-	err = s.SendBatch(ctx, &counterBatch).Close()
+	err = tx.SendBatch(ctx, &batch).Close()
 	if err != nil {
-		return fmt.Errorf("error occured on making batch counter update: %w", err)
+		return fmt.Errorf("error occured on making batch gauge update: %w", err)
 	}
 
 	return tx.Commit(ctx)

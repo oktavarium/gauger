@@ -19,7 +19,8 @@ func Run() error {
 		flagsConfig.FilePath,
 		flagsConfig.Restore,
 		flagsConfig.StoreInterval,
-		flagsConfig.DatabaseDSN)
+		flagsConfig.DatabaseDSN,
+		flagsConfig.HashKey)
 	if err != nil {
 		return fmt.Errorf("error on creating gaugeserver: %w", err)
 	}

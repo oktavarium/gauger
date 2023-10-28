@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type storage struct {
-	*pgx.Conn
+	*pgxpool.Pool
 }
 
 func NewStorage(dsn string) (*storage, error) {
 	ctx := context.Background()
-	db, err := pgx.Connect(ctx, dsn)
+	db, err := pgxpool.New(ctx, dsn)
 	if err != nil {
 		return nil, err
 	}

@@ -5,7 +5,11 @@ import (
 	"fmt"
 )
 
-func (s *storage) UpdateCounter(ctx context.Context, name string, val int64) (int64, error) {
+func (s *storage) UpdateCounter(
+	ctx context.Context,
+	name string,
+	val int64,
+) (int64, error) {
 	s.counter[name] += val
 	if s.sync {
 		err := s.save()
