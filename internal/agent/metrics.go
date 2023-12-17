@@ -17,6 +17,7 @@ type metrics struct {
 	counters map[string]int64
 }
 
+// NewMetrics конструктор хранилища метрик между отправками на сервер
 func NewMetrics() metrics {
 	return metrics{
 		make(map[string]float64),

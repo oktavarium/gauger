@@ -15,7 +15,7 @@ services:
     container_name: gaugeserver
     image: gaugeserver
     ports:
-      - "8080:8080"
+      - "8081:8081"
     depends_on:
       postgres:
         condition: service_healthy
@@ -26,6 +26,8 @@ services:
   client:
     container_name: client
     image: client
+    ports:
+      - "8082:8082"
     depends_on:
       gaugeserver:
         condition: service_started
@@ -33,5 +35,7 @@ services:
       context: .
       dockerfile: cmd/agent/Dockerfile
     env_file: .env
+    environment:
+      - ADDRESS=gaugeserver$ADDRESS
 
 

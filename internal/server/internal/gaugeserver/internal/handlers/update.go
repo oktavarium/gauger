@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// UpdateHandle - обновляет одну метрику
 func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {
@@ -61,6 +62,7 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// UpdateHandle - обновляет одну метрику, переданную в виде JSON
 func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {

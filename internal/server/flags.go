@@ -10,13 +10,13 @@ import (
 )
 
 type config struct {
-	Address       string        `env:"ADDRESS"`
-	LogLevel      string        `env:"LOGLEVEL"`
-	StoreInterval time.Duration `env:"STORE_INTERVAL"`
-	FilePath      string        `env:"FILE_STORAGE_PATH"`
-	Restore       bool          `env:"RESTORE"`
-	DatabaseDSN   string        `env:"DATABASE_DSN"`
-	HashKey       string        `env:"KEY"`
+	Address       string        `env:"ADDRESS"`           // адрес и порт работы сервиса метрик
+	LogLevel      string        `env:"LOGLEVEL"`          // уровень логирования
+	StoreInterval time.Duration `env:"STORE_INTERVAL"`    // интервал сброса метрик в файл
+	FilePath      string        `env:"FILE_STORAGE_PATH"` // путь к файлу хранилища
+	Restore       bool          `env:"RESTORE"`           // требуется ли восстановление при старте сервиса
+	DatabaseDSN   string        `env:"DATABASE_DSN"`      // DSN подключения к сервису posgtresql
+	HashKey       string        `env:"KEY"`               // ключ аутентификации
 }
 
 func loadConfig() (config, error) {

@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// UpdatesHandle - обновляет несколько метрик путем bactchUpdate
 func (h *Handler) UpdatesHandle(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {

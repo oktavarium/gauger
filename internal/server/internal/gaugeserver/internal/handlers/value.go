@@ -13,6 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// ValueHandle - получить метрику по типу и имени
 func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	metricType := strings.ToLower(chi.URLParam(r, "type"))
@@ -44,6 +45,7 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(valStr))
 }
 
+// ValueHandle - получить метрику по типу и имени в формате JSON
 func (h *Handler) ValueJSONHandle(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {

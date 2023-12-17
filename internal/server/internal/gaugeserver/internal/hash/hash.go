@@ -52,6 +52,7 @@ func checkHash(key []byte, data []byte, hash string) error {
 	return nil
 }
 
+// HashMiddleware - посредник для проверки подлинности клиента
 func HashMiddleware(key []byte) func(http.Handler) http.Handler {
 	nextF := func(next http.Handler) http.Handler {
 		hf := func(w http.ResponseWriter, r *http.Request) {

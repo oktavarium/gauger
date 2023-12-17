@@ -10,11 +10,11 @@ import (
 )
 
 type config struct {
-	Address        string        `env:"ADDRESS"`
-	ReportInterval time.Duration `env:"REPORT_INTERVAL"`
-	PollInterval   time.Duration `env:"POLL_INTERVAL"`
-	HashKey        string        `env:"KEY"`
-	RateLimit      int           `env:"RATE_LIMIT"`
+	Address        string        `env:"ADDRESS"`         // адрес сервиса сбора метрик
+	ReportInterval time.Duration `env:"REPORT_INTERVAL"` // интервал отправки метрик
+	PollInterval   time.Duration `env:"POLL_INTERVAL"`   // интервал сбора метрик
+	HashKey        string        `env:"KEY"`             // ключ аутентификации
+	RateLimit      int           `env:"RATE_LIMIT"`      // ограничение на количество поток
 }
 
 func loadConfig() (config, error) {
