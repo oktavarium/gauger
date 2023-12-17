@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage/internal/memory/archive"
+	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
+	"go.uber.org/zap"
 )
 
 type storage struct {
@@ -43,7 +45,12 @@ func NewStorage(
 		go func() {
 			ticker := time.NewTicker(timeout)
 			for range ticker.C {
-				s.save()
+				if err := s.save(); err != nil {
+					logger.Logger().Info("error",
+						zap.String("func", "NewStorage"),
+						zap.Error(err),
+					)
+				}
 			}
 		}()
 	}
