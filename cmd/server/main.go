@@ -11,7 +11,7 @@ import (
 
 func main() {
 	go func() {
-		err := http.ListenAndServe(":8081", nil)
+		err := http.ListenAndServe(":8888", nil)
 		if err != nil {
 			panic(fmt.Errorf("pprf error: %w", err))
 		}
