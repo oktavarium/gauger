@@ -116,7 +116,9 @@ func collector(
 		for {
 			select {
 			case <-ticker.C:
-				collect(metrics)
+				if err := collect(metrics); err != nil {
+					return err
+				}
 				packedMatrics, err := packMetrics(metrics)
 				if err != nil {
 					return err

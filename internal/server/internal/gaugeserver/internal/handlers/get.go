@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// GetHandle получает все доступные в данный момент метрики
 func (h *Handler) GetHandle(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {
@@ -23,5 +24,5 @@ func (h *Handler) GetHandle(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.Write(data)
+	_, err = w.Write(data)
 }

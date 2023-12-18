@@ -39,7 +39,7 @@ func Run() error {
 	return nil
 }
 
-// fanIn - метод мультиплексирования входящих данных от множества потоков
+// fanIn - метод мультиплексирования входящих данных от множества
 func fanIn(chs ...<-chan []byte) <-chan []byte {
 	chOut := make(chan []byte, len(chs))
 	var wg sync.WaitGroup

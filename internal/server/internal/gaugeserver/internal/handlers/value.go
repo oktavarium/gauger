@@ -15,6 +15,16 @@ import (
 
 // ValueHandle - получить метрику по типу и имени
 func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
+	var err error
+	defer func() {
+		if err != nil {
+			logger.Logger().Info("error",
+				zap.String("func", "ValueJSONHandle"),
+				zap.Error(err),
+			)
+		}
+	}()
+
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	metricType := strings.ToLower(chi.URLParam(r, "type"))
 	metricName := strings.ToLower(chi.URLParam(r, "name"))
@@ -42,7 +52,7 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(valStr))
+	_, err = w.Write([]byte(valStr))
 }
 
 // ValueHandle - получить метрику по типу и имени в формате JSON

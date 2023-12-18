@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// Ping - определяет доступность хранилища (и самого сервиса)
 func (h *Handler) PingHandle(w http.ResponseWriter, r *http.Request) {
 	var err error
 	defer func() {
