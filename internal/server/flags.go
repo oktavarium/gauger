@@ -9,6 +9,7 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
+// config - структура хранения настроек сервиса
 type config struct {
 	Address       string        `env:"ADDRESS"`           // адрес и порт работы сервиса метрик
 	LogLevel      string        `env:"LOGLEVEL"`          // уровень логирования
@@ -19,6 +20,7 @@ type config struct {
 	HashKey       string        `env:"KEY"`               // ключ аутентификации
 }
 
+// loadConfig - загружает конфигурацию - из флагов и переменных окружения
 func loadConfig() (config, error) {
 	var flagsConfig config
 	flag.StringVar(&flagsConfig.Address, "a", "localhost:8080",

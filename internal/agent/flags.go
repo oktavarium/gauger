@@ -9,6 +9,7 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
+// config - структура хранения настроек агента
 type config struct {
 	Address        string        `env:"ADDRESS"`         // адрес сервиса сбора метрик
 	ReportInterval time.Duration `env:"REPORT_INTERVAL"` // интервал отправки метрик
@@ -17,6 +18,7 @@ type config struct {
 	RateLimit      int           `env:"RATE_LIMIT"`      // ограничение на количество поток
 }
 
+// loadConfig - загружает конфигурацию - из флагов и переменных окружения
 func loadConfig() (config, error) {
 	var flagsConfig config
 	flag.StringVar(&flagsConfig.Address, "a", "localhost:8080",

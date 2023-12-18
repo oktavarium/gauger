@@ -9,6 +9,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// Run - запускает агент сбора и отправки метрик на сервер
 func Run() error {
 	flagsConfig, err := loadConfig()
 	if err != nil {

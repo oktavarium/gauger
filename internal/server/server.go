@@ -7,6 +7,7 @@ import (
 	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
 )
 
+// Run - запускает сервис обработки метрик
 func Run() error {
 	flagsConfig, err := loadConfig()
 	if err != nil {

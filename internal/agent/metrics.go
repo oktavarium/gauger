@@ -25,6 +25,7 @@ func NewMetrics() metrics {
 	}
 }
 
+// readMetrics - читает все метрики через runtime.ReadMemStats
 func readMetrics(m metrics) error {
 	var memStats runtime.MemStats
 	runtime.ReadMemStats(&memStats)
@@ -63,6 +64,7 @@ func readMetrics(m metrics) error {
 	return nil
 }
 
+// readMetrics - читает метрики через mem.VirtualMemory
 func readPsMetrics(m metrics) error {
 	vm, err := mem.VirtualMemory()
 	if err != nil {
@@ -82,6 +84,7 @@ func readPsMetrics(m metrics) error {
 	return nil
 }
 
+// packMetrics - упаковывает все метики методом compressMetrics
 func packMetrics(m metrics) ([]byte, error) {
 	allMetrics := make([]shared.Metric, 0, len(m.gauges)+len(m.counters))
 	for k, v := range m.gauges {
