@@ -25,12 +25,15 @@ func (s *storage) GetAll(ctx context.Context) ([]byte, error) {
 	encoder := json.NewEncoder(&buffer)
 
 	for k, v := range s.gauge {
+		v := v
 		allMetrics = append(allMetrics, shared.NewGaugeMetric(k, &v))
 
 	}
 	for k, v := range s.counter {
+		v := v
 		allMetrics = append(allMetrics, shared.NewCounterMetric(k, &v))
 	}
+
 	for _, v := range allMetrics {
 		err := encoder.Encode(&v)
 		if err != nil {

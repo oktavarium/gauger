@@ -65,7 +65,7 @@ func (s *storage) batchUpdate(
 	`
 
 	for _, v := range gauge {
-		batch.Queue(gaugeQuery, v.ID, *v.Value)
+		batch.Queue(gaugeQuery, v.ID, v.Value)
 	}
 
 	counterQuery := `
