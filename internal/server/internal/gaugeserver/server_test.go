@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -55,4 +56,10 @@ func TestRouter(t *testing.T) {
 		assert.Equal(t, test.status, resp.StatusCode, test.name)
 		assert.Equal(t, test.want, get, test.name)
 	}
+}
+
+func TestNewGaugeServer(t *testing.T) {
+	_, err := NewGaugerServer(":8080", "tmp.file", false, 1*time.Second, "", "key")
+
+	require.NoError(t, err)
 }

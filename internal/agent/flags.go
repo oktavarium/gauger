@@ -38,6 +38,7 @@ func loadConfig() (config, error) {
 	}
 
 	if len(flag.Args()) > 0 {
+		fmt.Println(flag.Args())
 		return flagsConfig, errors.New("unrecognised flags")
 	}
 

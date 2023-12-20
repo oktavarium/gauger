@@ -1,11 +1,14 @@
 package agent
 
 import (
+	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/oktavarium/go-gauger/internal/shared"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/sync/errgroup"
 )
 
 var compressedData = []uint8([]byte{
@@ -39,4 +42,68 @@ func TestHashData(t *testing.T) {
 
 	require.Equal(t, want, hash)
 	require.NoError(t, err)
+}
+
+func TestFanIn(t *testing.T) {
+	in1 := make(chan []byte, 1)
+	in2 := make(chan []byte, 1)
+
+	out := fanIn(in1, in2)
+	d1 := []byte("test")
+	d2 := []byte("test")
+	in1 <- d1
+	in2 <- d2
+
+	require.Equal(t, d1, <-out)
+	require.Equal(t, d2, <-out)
+}
+
+func TestNewMetrics(t *testing.T) {
+	m := NewMetrics()
+
+	require.Empty(t, m.gauges)
+	require.Empty(t, m.counters)
+}
+
+func TestReadMetrics(t *testing.T) {
+	m := NewMetrics()
+	err := readMetrics(m)
+	require.NoError(t, err)
+
+	gaugeCount := 28
+
+	require.NotEmpty(t, m)
+	require.Equal(t, gaugeCount, len(m.gauges))
+}
+
+func TestPsMetrics(t *testing.T) {
+	m := NewMetrics()
+	err := readPsMetrics(m)
+	require.NoError(t, err)
+
+	psCount := 3
+
+	require.NotEmpty(t, m)
+	require.Equal(t, psCount, len(m.gauges))
+}
+
+func TestCollector(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	out := collector(ctx, readMetrics, &errgroup.Group{}, 1*time.Second)
+	time.Sleep(3 * time.Second)
+	cancel()
+	data := <-out
+
+	require.NotEmpty(t, data)
+}
+
+func TestLoadConfig(t *testing.T) {
+	cfg, err := loadConfig()
+	require.NoError(t, err)
+	require.Equal(t, "http://localhost:8080", cfg.Address)
+	require.Equal(t, "", cfg.HashKey)
+	require.Equal(t, 2*time.Second, cfg.PollInterval)
+	require.Equal(t, 1, cfg.RateLimit)
+	require.Equal(t, 10*time.Second, cfg.ReportInterval)
 }
