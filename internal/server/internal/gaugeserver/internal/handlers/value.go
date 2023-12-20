@@ -19,7 +19,7 @@ func (h *Handler) ValueHandle(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if err != nil {
 			logger.Logger().Info("error",
-				zap.String("func", "ValueJSONHandle"),
+				zap.String("func", "ValueHandle"),
 				zap.Error(err),
 			)
 		}

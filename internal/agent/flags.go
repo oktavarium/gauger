@@ -27,7 +27,7 @@ func loadConfig() (config, error) {
 		"address and port of server's endpoint in notaion address:port")
 	flag.IntVar(&flagsConfig.ReportIntervalInt, "r", 2,
 		"report interval in seconds")
-	flag.IntVar(&flagsConfig.PollIntervalInt, "p", 1,
+	flag.IntVar(&flagsConfig.PollIntervalInt, "p", 2,
 		"poll interval in seconds")
 	flag.StringVar(&flagsConfig.HashKey, "k", "",
 		"key for hash")
