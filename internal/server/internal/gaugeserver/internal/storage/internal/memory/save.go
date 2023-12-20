@@ -22,6 +22,9 @@ func (s *storage) save() error {
 	if err != nil {
 		return fmt.Errorf("error on saving all: %w", err)
 	}
+
+	s.mx.Lock()
+	defer s.mx.Unlock()
 	err = s.archive.Save(data)
 	if err != nil {
 		return fmt.Errorf("error on saving all: %w", err)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage/internal/memory/archive"
@@ -17,6 +18,7 @@ type storage struct {
 	counter map[string]int64
 	archive archive.FileArchive
 	sync    bool
+	mx      sync.RWMutex
 }
 
 func NewStorage(
