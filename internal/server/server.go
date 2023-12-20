@@ -9,13 +9,16 @@ import (
 
 // Run - запускает сервис обработки метрик
 func Run() error {
+	fmt.Println("READ CONFIG!!!!!!!!!!!!!!!!!!!!")
 	flagsConfig, err := loadConfig()
 	if err != nil {
 		return fmt.Errorf("error on loading config: %w", err)
 	}
-
-	logger.Init(flagsConfig.LogLevel)
-
+	fmt.Println("init logger!!!!!!!!!!!!!!!!!!!!")
+	if err := logger.Init(flagsConfig.LogLevel); err != nil {
+		return fmt.Errorf("error init logger: %w", err)
+	}
+	fmt.Println("NEW SERVER!!!!!!!!!!!!!!!!!!!!")
 	gs, err := gaugeserver.NewGaugerServer(flagsConfig.Address,
 		flagsConfig.FilePath,
 		flagsConfig.Restore,
@@ -25,6 +28,6 @@ func Run() error {
 	if err != nil {
 		return fmt.Errorf("error on creating gaugeserver: %w", err)
 	}
-
+	fmt.Println("START LISTEN!!!")
 	return gs.ListenAndServe()
 }
