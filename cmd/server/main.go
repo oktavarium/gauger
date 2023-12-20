@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!1111")
 	go func() {
 		err := http.ListenAndServe(":8888", nil)
 		if err != nil {

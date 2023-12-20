@@ -2,7 +2,6 @@ package agent
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -27,7 +26,6 @@ func TestCompressMetrics(t *testing.T) {
 	metrics := make([]shared.Metric, 0)
 	metrics = append(metrics, shared.NewEmptyCounterMetric(), shared.NewEmptyGaugeMetric())
 	compressed, err := compressMetrics(metrics)
-	fmt.Println(string(compressed))
 
 	require.Equal(t, compressedData, compressed)
 	require.NoError(t, err)

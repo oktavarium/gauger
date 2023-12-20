@@ -11,11 +11,13 @@ import (
 
 // config - структура хранения настроек агента
 type config struct {
-	Address        string        `env:"ADDRESS"`         // адрес сервиса сбора метрик
-	ReportInterval time.Duration `env:"REPORT_INTERVAL"` // интервал отправки метрик
-	PollInterval   time.Duration `env:"POLL_INTERVAL"`   // интервал сбора метрик
-	HashKey        string        `env:"KEY"`             // ключ аутентификации
-	RateLimit      int           `env:"RATE_LIMIT"`      // ограничение на количество поток
+	Address           string `env:"ADDRESS"`         // адрес сервиса сбора метрик
+	ReportIntervalInt int    `env:"REPORT_INTERVAL"` // интервал отправки метрик
+	PollIntervalInt   int    `env:"POLL_INTERVAL"`   // интервал сбора метрик
+	HashKey           string `env:"KEY"`             // ключ аутентификации
+	RateLimit         int    `env:"RATE_LIMIT"`      // ограничение на количество поток
+	ReportInterval    time.Duration
+	PollInterval      time.Duration
 }
 
 // loadConfig - загружает конфигурацию - из флагов и переменных окружения
@@ -23,9 +25,9 @@ func loadConfig() (config, error) {
 	var flagsConfig config
 	flag.StringVar(&flagsConfig.Address, "a", "localhost:8080",
 		"address and port of server's endpoint in notaion address:port")
-	flag.DurationVar(&flagsConfig.ReportInterval, "r", 10*time.Second,
+	flag.IntVar(&flagsConfig.ReportIntervalInt, "r", 2,
 		"report interval in seconds")
-	flag.DurationVar(&flagsConfig.PollInterval, "p", 2*time.Second,
+	flag.IntVar(&flagsConfig.PollIntervalInt, "p", 1,
 		"poll interval in seconds")
 	flag.StringVar(&flagsConfig.HashKey, "k", "",
 		"key for hash")
@@ -38,13 +40,15 @@ func loadConfig() (config, error) {
 	}
 
 	if len(flag.Args()) > 0 {
-		fmt.Println(flag.Args())
 		return flagsConfig, errors.New("unrecognised flags")
 	}
 
 	if flagsConfig.RateLimit <= 0 {
 		flagsConfig.RateLimit = 1
 	}
+
+	flagsConfig.PollInterval = time.Duration(flagsConfig.PollIntervalInt) * time.Second
+	flagsConfig.ReportInterval = time.Duration(flagsConfig.ReportIntervalInt) * time.Second
 
 	flagsConfig.Address = "http://" + flagsConfig.Address
 
