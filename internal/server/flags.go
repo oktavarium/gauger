@@ -11,13 +11,14 @@ import (
 
 // config - структура хранения настроек сервиса
 type config struct {
-	Address       string        `env:"ADDRESS"`           // адрес и порт работы сервиса метрик
-	LogLevel      string        `env:"LOGLEVEL"`          // уровень логирования
-	StoreInterval time.Duration `env:"STORE_INTERVAL"`    // интервал сброса метрик в файл
-	FilePath      string        `env:"FILE_STORAGE_PATH"` // путь к файлу хранилища
-	Restore       bool          `env:"RESTORE"`           // требуется ли восстановление при старте сервиса
-	DatabaseDSN   string        `env:"DATABASE_DSN"`      // DSN подключения к сервису posgtresql
-	HashKey       string        `env:"KEY"`               // ключ аутентификации
+	Address          string `env:"ADDRESS"`        // адрес и порт работы сервиса метрик
+	LogLevel         string `env:"LOGLEVEL"`       // уровень логирования
+	StoreIntervalInt int    `env:"STORE_INTERVAL"` // интервал сброса метрик в файл
+	StoreInterval    time.Duration
+	FilePath         string `env:"FILE_STORAGE_PATH"` // путь к файлу хранилища
+	Restore          bool   `env:"RESTORE"`           // требуется ли восстановление при старте сервиса
+	DatabaseDSN      string `env:"DATABASE_DSN"`      // DSN подключения к сервису posgtresql
+	HashKey          string `env:"KEY"`               // ключ аутентификации
 }
 
 // loadConfig - загружает конфигурацию - из флагов и переменных окружения
@@ -27,7 +28,7 @@ func loadConfig() (config, error) {
 		"address and port of server in notaion address:port")
 	flag.StringVar(&flagsConfig.LogLevel, "l", "info",
 		"log level")
-	flag.DurationVar(&flagsConfig.StoreInterval, "i", 300*time.Second,
+	flag.IntVar(&flagsConfig.StoreIntervalInt, "i", 5,
 		"store interval")
 	flag.StringVar(&flagsConfig.FilePath, "f", "/tmp/metrics-db.json",
 		"file storage path")
@@ -46,6 +47,8 @@ func loadConfig() (config, error) {
 	if len(flag.Args()) > 0 {
 		return flagsConfig, errors.New("unrecognised flags")
 	}
+
+	flagsConfig.StoreInterval = time.Duration(flagsConfig.StoreIntervalInt) * time.Second
 
 	return flagsConfig, nil
 }
