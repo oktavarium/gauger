@@ -10,6 +10,8 @@ func (s *storage) SaveGauge(
 	name string,
 	val float64,
 ) error {
+	s.mx.Lock()
+	defer s.mx.Unlock()
 	s.gauge[name] = val
 	if s.sync {
 		return s.save()
