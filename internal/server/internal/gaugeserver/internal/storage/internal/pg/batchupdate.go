@@ -50,12 +50,19 @@ func (s *storage) batchUpdate(
 	ctx context.Context,
 	gauge []shared.Metric,
 	counter []shared.Metric,
-) error {
+) (err error) {
 	tx, err := s.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted})
 	if err != nil {
 		return fmt.Errorf("error occured on creating tx on batchupdate: %w", err)
 	}
-	defer tx.Rollback(ctx)
+
+	defer func() {
+		if err != nil {
+			err = tx.Rollback(ctx)
+		} else {
+			err = tx.Commit(ctx)
+		}
+	}()
 
 	batch := pgx.Batch{}
 	gaugeQuery := `
@@ -82,5 +89,5 @@ func (s *storage) batchUpdate(
 		return fmt.Errorf("error occured on making batch gauge update: %w", err)
 	}
 
-	return tx.Commit(ctx)
+	return nil
 }
