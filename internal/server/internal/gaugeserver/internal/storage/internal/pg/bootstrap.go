@@ -26,18 +26,30 @@ counter
 `
 
 func (s *storage) bootstrap(ctx context.Context) (err error) {
+	fmt.Println("!")
 	tx, err := s.BeginTx(ctx, pgx.TxOptions{})
+	fmt.Println("!!")
 	if err != nil {
+		fmt.Println("!!!")
 		return fmt.Errorf("error occured on opening tx: %w", err)
 	}
+	fmt.Println("!!!!")
 	defer func() {
-		err = tx.Rollback(ctx)
-	}()
+		if err != nil {
+			fmt.Println("!!!!!")
+			err = tx.Rollback(ctx)
+		} else {
+			fmt.Println("!!!!!!!!!")
+			err = tx.Commit(ctx)
+		}
 
+	}()
+	fmt.Println("!!!!!!")
 	_, err = tx.Exec(ctx, createTablesQuery)
 	if err != nil {
+		fmt.Println("!!!!!!!")
 		return fmt.Errorf("error occured on creating tables: %w", err)
 	}
-
-	return tx.Commit(ctx)
+	fmt.Println("!!!!!!!!")
+	return nil
 }
