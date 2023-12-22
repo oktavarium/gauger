@@ -13,9 +13,6 @@ import (
 )
 
 func (s *storage) restore() error {
-	s.mx.Lock()
-	defer s.mx.Unlock()
-
 	data, err := s.archive.Restore()
 	if err != nil {
 		return fmt.Errorf("error on restoring archive: %w", err)

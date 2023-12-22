@@ -2,20 +2,19 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
-	_ "net/http/pprof"
+	// _ "net/http/pprof"
 
 	"github.com/oktavarium/go-gauger/internal/server"
 )
 
 func main() {
-	go func() {
-		err := http.ListenAndServe(":8888", nil)
-		if err != nil {
-			panic(fmt.Errorf("pprf error: %w", err))
-		}
-	}()
+	// func() {
+	// 	err := http.ListenAndServe(":8888", nil)
+	// 	if err != nil {
+	// 		panic(fmt.Errorf("pprf error: %w", err))
+	// 	}go
+	// }()
 
 	if err := server.Run(); err != nil {
 		panic(fmt.Errorf("error on running server: %w", err))
