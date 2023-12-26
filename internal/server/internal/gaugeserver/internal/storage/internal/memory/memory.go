@@ -48,7 +48,7 @@ func NewStorage(
 			ticker := time.NewTicker(timeout)
 			for range ticker.C {
 				if err := s.save(); err != nil {
-					logger.Logger().Info("error",
+					logger.Logger().Error("error",
 						zap.String("func", "NewStorage"),
 						zap.Error(err),
 					)

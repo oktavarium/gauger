@@ -59,7 +59,7 @@ func HashMiddleware(key []byte) func(http.Handler) http.Handler {
 			if _, ok := r.Header[HashHeader]; ok {
 				body, err := io.ReadAll(r.Body)
 				if err != nil {
-					logger.Logger().Info("error",
+					logger.Logger().Error("error",
 						zap.String("func", "HashMiddleware"),
 						zap.Error(err))
 
@@ -71,7 +71,7 @@ func HashMiddleware(key []byte) func(http.Handler) http.Handler {
 
 				err = checkHash(key, body, r.Header.Get(HashHeader))
 				if err != nil {
-					logger.Logger().Info("error",
+					logger.Logger().Error("error",
 						zap.String("func", "HashMiddleware"),
 						zap.Error(err))
 

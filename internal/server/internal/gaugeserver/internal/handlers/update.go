@@ -10,21 +10,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
 	"github.com/oktavarium/go-gauger/internal/shared"
-	"go.uber.org/zap"
 )
 
 // UpdateHandle - обновляет одну метрику
 func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer func() {
-		if err != nil {
-			logger.Logger().Info("error",
-				zap.String("func", "UpdateHandle"),
-				zap.Error(err),
-			)
-		}
-	}()
-
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	metricType := strings.ToLower(chi.URLParam(r, "type"))
 	metricName := strings.ToLower(chi.URLParam(r, "name"))
@@ -35,6 +25,7 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 		var val float64
 		val, err = strconv.ParseFloat(metricValueStr, 64)
 		if err != nil {
+			logger.LogError("UpdateHandle", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -44,6 +35,7 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 		var val int64
 		val, err = strconv.ParseInt(metricValueStr, 10, 64)
 		if err != nil {
+			logger.LogError("UpdateHandle", err)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -55,6 +47,7 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
+		logger.LogError("UpdateHandle", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -65,15 +58,6 @@ func (h *Handler) UpdateHandle(w http.ResponseWriter, r *http.Request) {
 // UpdateHandle - обновляет одну метрику, переданную в виде JSON
 func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 	var err error
-	defer func() {
-		if err != nil {
-			logger.Logger().Info("error",
-				zap.String("func", "UpdateJSONHandle"),
-				zap.Error(err),
-			)
-		}
-	}()
-
 	w.Header().Set("Content-Type", "application/json")
 	if r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusUnsupportedMediaType)
@@ -84,6 +68,7 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err = decoder.Decode(&metric)
 	if err != nil {
+		logger.LogError("UpdateJSONHandle", err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -91,6 +76,7 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 	// checking metric name
 	if len(metric.ID) == 0 {
 		err = fmt.Errorf("empty metric id received")
+		logger.LogError("UpdateJSONHandle", err)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -114,6 +100,7 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
+		logger.LogError("UpdateJSONHandle", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -121,6 +108,7 @@ func (h *Handler) UpdateJSONHandle(w http.ResponseWriter, r *http.Request) {
 	encoder := json.NewEncoder(w)
 	err = encoder.Encode(&metric)
 	if err != nil {
+		logger.LogError("UpdateJSONHandle", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

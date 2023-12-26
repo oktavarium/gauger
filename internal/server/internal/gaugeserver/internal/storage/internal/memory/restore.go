@@ -27,14 +27,14 @@ func (s *storage) restore() error {
 		switch metrics.MType {
 		case string(shared.GaugeType):
 			if err := s.SaveGauge(context.Background(), metrics.ID, *metrics.Value); err != nil {
-				logger.Logger().Info("error",
+				logger.Logger().Error("error",
 					zap.String("func", "restore"),
 					zap.Error(err),
 				)
 			}
 		case string(shared.CounterType):
 			if _, err := s.UpdateCounter(context.Background(), metrics.ID, *metrics.Delta); err != nil {
-				logger.Logger().Info("error",
+				logger.Logger().Error("error",
 					zap.String("func", "restore"),
 					zap.Error(err),
 				)

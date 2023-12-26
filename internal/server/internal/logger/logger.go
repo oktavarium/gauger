@@ -47,6 +47,13 @@ func Logger() *zap.Logger {
 	return logger
 }
 
+func LogError(funcName string, err error) {
+	Logger().Error("error",
+		zap.String("func", "GetHandle"),
+		zap.Error(err),
+	)
+}
+
 // Init - метод инициализации логгера с уровнем по умолчанию
 func Init(level string) error {
 	atomicLevel, err := zap.ParseAtomicLevel(level)
