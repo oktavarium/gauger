@@ -16,11 +16,11 @@ func TestNewGaugeServer(t *testing.T) {
 }
 
 func TestRouter(t *testing.T) {
-	server, err := NewGaugerServer("localhost:8080", "temp.txt", true, 1*time.Minute, "", "cxvxv")
+	server, err := NewGaugerServer("localhost:8088", "temp.txt", true, 1*time.Minute, "", "cxvxv")
 	require.NoError(t, err)
 
 	go server.ListenAndServe()
-
+	time.Sleep(5 * time.Second)
 	tests := []struct {
 		name   string
 		method string
@@ -42,7 +42,7 @@ func TestRouter(t *testing.T) {
 
 	for _, test := range tests {
 
-		req, err := http.NewRequest(test.method, "http://localhost:8080"+test.url, nil)
+		req, err := http.NewRequest(test.method, "http://localhost:8088"+test.url, nil)
 		require.NoError(t, err)
 		resp, err := http.DefaultClient.Do(req)
 		require.NoError(t, err)

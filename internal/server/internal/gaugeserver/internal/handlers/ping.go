@@ -8,8 +8,7 @@ import (
 
 // Ping - определяет доступность хранилища (и самого сервиса)
 func (h *Handler) PingHandle(w http.ResponseWriter, r *http.Request) {
-	var err error
-	err = h.storage.Ping(r.Context())
+	err := h.storage.Ping(r.Context())
 	if err != nil {
 		if err != nil {
 			logger.LogError("PingHandle", err)
