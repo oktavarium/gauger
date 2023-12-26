@@ -10,9 +10,7 @@ import (
 func (h *Handler) PingHandle(w http.ResponseWriter, r *http.Request) {
 	err := h.storage.Ping(r.Context())
 	if err != nil {
-		if err != nil {
-			logger.LogError("PingHandle", err)
-		}
+		logger.LogError("PingHandle", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
