@@ -19,6 +19,9 @@ func compressMetrics(metrics []shared.Metric) ([]byte, error) {
 		return nil, fmt.Errorf("error occured on encoding metric: %w", err)
 	}
 
-	wr.Close()
+	if err := wr.Close(); err != nil {
+		return nil, fmt.Errorf("error on closing writer: %w", err)
+	}
+
 	return compressedJSON.Bytes(), nil
 }

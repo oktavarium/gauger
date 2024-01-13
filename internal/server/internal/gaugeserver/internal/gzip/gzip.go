@@ -24,7 +24,7 @@ func newGzipWriter(w http.ResponseWriter) *compressedWriter {
 }
 
 func (c *compressedWriter) Close() {
-	c.gzipWriter.Close()
+	_ = c.gzipWriter.Close()
 }
 
 func (c *compressedWriter) Header() http.Header {
@@ -94,7 +94,11 @@ func GzipMiddleware(next http.Handler) http.Handler {
 			}
 
 			r.Body = gzipReader
-			defer gzipReader.Close()
+			defer func() {
+				if err = gzipReader.Close(); err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+				}
+			}()
 		}
 		next.ServeHTTP(ow, r)
 	}
