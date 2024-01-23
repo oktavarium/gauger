@@ -16,6 +16,7 @@ type config struct {
 	PollIntervalInt   int    `env:"POLL_INTERVAL"`   // интервал сбора метрик
 	HashKey           string `env:"KEY"`             // ключ аутентификации
 	RateLimit         int    `env:"RATE_LIMIT"`      // ограничение на количество поток
+	CryptoKey         string `env:"CRYPTO_KEY"`      // файл с публичным ключом сервера
 	ReportInterval    time.Duration
 	PollInterval      time.Duration
 }
@@ -31,6 +32,8 @@ func loadConfig() (config, error) {
 		"poll interval in seconds")
 	flag.StringVar(&flagsConfig.HashKey, "k", "",
 		"key for hash")
+	flag.StringVar(&flagsConfig.CryptoKey, "crypto-key", "",
+		"server public key file")
 	flag.IntVar(&flagsConfig.RateLimit, "l", 1,
 		"requests limit")
 	flag.Parse()

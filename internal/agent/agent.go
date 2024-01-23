@@ -2,7 +2,10 @@ package agent
 
 import (
 	"context"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -14,6 +17,21 @@ func Run() error {
 	flagsConfig, err := loadConfig()
 	if err != nil {
 		return fmt.Errorf("error on loading config: %w", err)
+	}
+
+	publicKeyData, err := os.ReadFile(flagsConfig.CryptoKey)
+	if err != nil {
+		return fmt.Errorf("error on reading public key file: %w", err)
+	}
+
+	pkPEM, _ := pem.Decode(publicKeyData)
+	if pkPEM.Type != "RSA PUBLIC KEY" {
+		return fmt.Errorf("wrong key type: %w", err)
+	}
+
+	publicKey, err := x509.ParsePKCS1PublicKey(pkPEM.Bytes)
+	if err != nil {
+		return fmt.Errorf("error parsing public key: %w", err)
 	}
 
 	eg, egCtx := errgroup.WithContext(context.Background())
@@ -29,7 +47,7 @@ func Run() error {
 
 	unitedCh := fanIn(chMetrics, chPsMetrics)
 	for i := 0; i < flagsConfig.RateLimit; i++ {
-		go sender(egCtx, flagsConfig.Address, flagsConfig.HashKey,
+		go sender(egCtx, flagsConfig.Address, flagsConfig.HashKey, publicKey,
 			flagsConfig.ReportInterval, unitedCh)
 	}
 

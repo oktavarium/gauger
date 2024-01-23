@@ -19,6 +19,7 @@ type config struct {
 	Restore          bool   `env:"RESTORE"`           // требуется ли восстановление при старте сервиса
 	DatabaseDSN      string `env:"DATABASE_DSN"`      // DSN подключения к сервису posgtresql
 	HashKey          string `env:"KEY"`               // ключ аутентификации
+	CryptoKey        string `env:"CRYPTO_KEY"`        // файл с приватным ключом сервера
 }
 
 // loadConfig - загружает конфигурацию - из флагов и переменных окружения
@@ -38,6 +39,8 @@ func loadConfig() (config, error) {
 		"database connection string")
 	flag.StringVar(&flagsConfig.HashKey, "k", "",
 		"key for hash")
+	flag.StringVar(&flagsConfig.CryptoKey, "crypto-key", "",
+		"server private key file")
 	flag.Parse()
 
 	if err := env.Parse(&flagsConfig); err != nil {

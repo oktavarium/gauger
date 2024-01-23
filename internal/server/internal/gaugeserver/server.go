@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/cipher"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/gzip"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/handlers"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/hash"
@@ -25,7 +26,8 @@ func NewGaugerServer(addr string,
 	restore bool,
 	timeout time.Duration,
 	dsn string,
-	key string) (*GaugerServer, error) {
+	key string,
+	pkFile string) (*GaugerServer, error) {
 	server := &GaugerServer{
 		router: chi.NewRouter(),
 		addr:   addr,
@@ -43,10 +45,19 @@ func NewGaugerServer(addr string,
 
 	handler := handlers.NewHandler(s)
 
+	if len(pkFile) != 0 {
+		c, err := cipher.NewCipher(pkFile)
+		if err != nil {
+			return nil, fmt.Errorf("error on creating cipher: %w", err)
+		}
+		server.router.Use(c.CipherMiddleware)
+	}
+
 	server.router.Use(logger.LoggerMiddleware)
 	if len(key) != 0 {
 		server.router.Use(hash.HashMiddleware([]byte(key)))
 	}
+
 	server.router.Use(gzip.GzipMiddleware)
 	server.router.Get("/", handler.GetHandle)
 	server.router.Get("/ping", handler.PingHandle)
