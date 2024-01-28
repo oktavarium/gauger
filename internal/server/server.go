@@ -3,13 +3,14 @@ package server
 import (
 	"fmt"
 
+	"github.com/oktavarium/go-gauger/internal/server/internal/flags"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver"
 	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
 )
 
 // Run - запускает сервис обработки метрик
 func Run() error {
-	flagsConfig, err := loadConfig()
+	flagsConfig, err := flags.LoadConfig()
 	if err != nil {
 		return fmt.Errorf("error on loading config: %w", err)
 	}

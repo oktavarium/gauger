@@ -9,12 +9,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/oktavarium/go-gauger/internal/agent/internal/flags"
 	"golang.org/x/sync/errgroup"
 )
 
 // Run - запускает агент сбора и отправки метрик на сервер
 func Run() error {
-	flagsConfig, err := loadConfig()
+	flagsConfig, err := flags.LoadConfig()
 	if err != nil {
 		return fmt.Errorf("error on loading config: %w", err)
 	}
