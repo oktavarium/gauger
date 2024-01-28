@@ -7,7 +7,7 @@ func (c *Config) parseCli() {
 		"address and port of server in notaion address:port")
 	flag.StringVar(&c.LogLevel, "l", "info",
 		"log level")
-	flag.IntVar(&c.StoreIntervalInt, "i", 0,
+	flag.IntVar(&c.StoreIntervalInt, "i", 10,
 		"store interval")
 	flag.StringVar(&c.FilePath, "f", "/tmp/metrics-db.json",
 		"file storage path")
