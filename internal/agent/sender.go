@@ -18,6 +18,7 @@ import (
 const updatePath string = "updates"
 
 func reportMetrics(address string, key string, pk *rsa.PublicKey, metrics []byte) error {
+	var err error
 	endpoint := fmt.Sprintf("%s/%s/", address, updatePath)
 	var metricsResponse shared.Metric
 
@@ -36,13 +37,15 @@ func reportMetrics(address string, key string, pk *rsa.PublicKey, metrics []byte
 		request = request.SetHeader("HashSHA256", hash)
 	}
 
-	encryptedMetrics, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, pk, metrics, []byte{})
-	if err != nil {
-		return fmt.Errorf("error on encrypting metrics: %w", err)
+	if pk != nil {
+		metrics, err = rsa.EncryptOAEP(sha256.New(), rand.Reader, pk, metrics, []byte{})
+		if err != nil {
+			return fmt.Errorf("error on encrypting metrics: %w", err)
+		}
 	}
 
 	request = request.
-		SetBody(encryptedMetrics).
+		SetBody(metrics).
 		SetResult(&metricsResponse)
 	resp, err := request.Post(endpoint)
 

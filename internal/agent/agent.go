@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
@@ -22,19 +23,22 @@ func Run() error {
 		return fmt.Errorf("error on loading config: %w", err)
 	}
 
-	publicKeyData, err := os.ReadFile(flagsConfig.CryptoKey)
-	if err != nil {
-		return fmt.Errorf("error on reading public key file: %w", err)
-	}
+	var publicKey *rsa.PublicKey
+	if len(flagsConfig.CryptoKey) != 0 {
+		publicKeyData, err := os.ReadFile(flagsConfig.CryptoKey)
+		if err != nil {
+			return fmt.Errorf("error on reading public key file: %w", err)
+		}
 
-	pkPEM, _ := pem.Decode(publicKeyData)
-	if pkPEM.Type != "RSA PUBLIC KEY" {
-		return fmt.Errorf("wrong key type: %w", err)
-	}
+		pkPEM, _ := pem.Decode(publicKeyData)
+		if pkPEM.Type != "RSA PUBLIC KEY" {
+			return fmt.Errorf("wrong key type: %w", err)
+		}
 
-	publicKey, err := x509.ParsePKCS1PublicKey(pkPEM.Bytes)
-	if err != nil {
-		return fmt.Errorf("error parsing public key: %w", err)
+		publicKey, err = x509.ParsePKCS1PublicKey(pkPEM.Bytes)
+		if err != nil {
+			return fmt.Errorf("error parsing public key: %w", err)
+		}
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
