@@ -59,6 +59,12 @@ func NewStorage(
 						)
 					}
 				case <-ctx.Done():
+					if err := s.save(); err != nil {
+						logger.Logger().Error("error",
+							zap.String("func", "NewStorage"),
+							zap.Error(err),
+						)
+					}
 					return
 				}
 			}

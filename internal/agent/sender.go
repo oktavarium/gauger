@@ -24,7 +24,7 @@ func reportMetrics(address string, key string, pk *rsa.PublicKey, metrics []byte
 
 	client := resty.New()
 	request := client.R().
-		SetHeader("Content-Type", "application/octet-stream").
+		SetHeader("Content-Type", "application/json").
 		SetHeader("Content-Encoding", "gzip").
 		SetHeader("Accept-Encoding", "gzip")
 
