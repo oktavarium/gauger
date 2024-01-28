@@ -8,7 +8,7 @@ import (
 )
 
 func TestSaveGauge(t *testing.T) {
-	storage, _ := NewInMemoryStorage("/tmp/file.log", false, 500)
+	storage, _ := NewInMemoryStorage(context.Background(), "/tmp/file.log", false, 500)
 	type metrics struct {
 		name string
 		val  float64
@@ -45,7 +45,7 @@ func TestSaveGauge(t *testing.T) {
 }
 
 func TestUpdateCounter(t *testing.T) {
-	storage, _ := NewInMemoryStorage("/tmp/file.log", false, 500)
+	storage, _ := NewInMemoryStorage(context.Background(), "/tmp/file.log", false, 500)
 	type metrics struct {
 		name string
 		val  int64

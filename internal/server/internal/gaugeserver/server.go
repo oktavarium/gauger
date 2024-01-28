@@ -1,6 +1,7 @@
 package gaugeserver
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -12,16 +13,20 @@ import (
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/hash"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage"
 	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
+	"go.uber.org/zap"
 )
 
 // GaugeServer - управляющий сервис для сбора метрик
 type GaugerServer struct {
+	ctx    context.Context
 	router *chi.Mux
-	addr   string
+	srv    *http.Server
 }
 
 // NewGaugeServer - конструктор сервиса ядл сбора метрик
-func NewGaugerServer(addr string,
+func NewGaugerServer(
+	ctx context.Context,
+	addr string,
 	filename string,
 	restore bool,
 	timeout time.Duration,
@@ -29,13 +34,15 @@ func NewGaugerServer(addr string,
 	key string,
 	pkFile string) (*GaugerServer, error) {
 	server := &GaugerServer{
+		ctx:    ctx,
 		router: chi.NewRouter(),
-		addr:   addr,
 	}
+
 	var s storage.Storage
 	var err error
+
 	if len(dsn) == 0 {
-		s, err = storage.NewInMemoryStorage(filename, restore, timeout)
+		s, err = storage.NewInMemoryStorage(ctx, filename, restore, timeout)
 	} else {
 		s, err = storage.NewPostgresqlStorage(dsn)
 	}
@@ -67,10 +74,29 @@ func NewGaugerServer(addr string,
 	server.router.Post("/update/{type}/{name}/{value}", handler.UpdateHandle)
 	server.router.Get("/value/{type}/{name}", handler.ValueHandle)
 
+	server.srv = &http.Server{
+		Addr:    addr,
+		Handler: server.router,
+	}
+
 	return server, nil
 }
 
 // ListenAndServer - запуск сервиса
 func (g *GaugerServer) ListenAndServe() error {
-	return http.ListenAndServe(g.addr, g.router)
+	go func() {
+		<-g.ctx.Done()
+		if err := g.srv.Shutdown(context.Background()); err != nil {
+			logger.Logger().Error("error",
+				zap.String("func", "ListenAndServer"),
+				zap.Error(err))
+		}
+
+	}()
+
+	if err := g.srv.ListenAndServe(); err != http.ErrServerClosed {
+		return fmt.Errorf("error on listen and serve: %w", err)
+	}
+
+	return nil
 }

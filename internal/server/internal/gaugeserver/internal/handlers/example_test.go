@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 )
 
 func Example() {
-	s, _ := storage.NewInMemoryStorage("/tmp/testdb", false, 1*time.Minute)
+	s, _ := storage.NewInMemoryStorage(context.Background(), "/tmp/testdb", false, 1*time.Minute)
 	h := handlers.NewHandler(s)
 
 	w := httptest.NewRecorder()

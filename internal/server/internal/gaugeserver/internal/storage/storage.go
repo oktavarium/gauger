@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"time"
 
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage/internal/memory"
@@ -9,11 +10,12 @@ import (
 
 // NewInMemoryStorage - создает хранилище в файле
 func NewInMemoryStorage(
+	ctx context.Context,
 	filename string,
 	restore bool,
 	timeout time.Duration,
 ) (Storage, error) {
-	return memory.NewStorage(filename, restore, timeout)
+	return memory.NewStorage(ctx, filename, restore, timeout)
 }
 
 // NewPostgresqlStorage - создает хранилище postgresql

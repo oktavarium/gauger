@@ -6,7 +6,9 @@ import (
 	"encoding/pem"
 	"fmt"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/oktavarium/go-gauger/internal/agent/internal/flags"
@@ -35,7 +37,9 @@ func Run() error {
 		return fmt.Errorf("error parsing public key: %w", err)
 	}
 
-	eg, egCtx := errgroup.WithContext(context.Background())
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	defer stop()
+	eg, egCtx := errgroup.WithContext(ctx)
 
 	chMetrics := collector(
 		egCtx,
@@ -48,8 +52,11 @@ func Run() error {
 
 	unitedCh := fanIn(chMetrics, chPsMetrics)
 	for i := 0; i < flagsConfig.RateLimit; i++ {
-		go sender(egCtx, flagsConfig.Address, flagsConfig.HashKey, publicKey,
-			flagsConfig.ReportInterval, unitedCh)
+		eg.Go(func() error {
+			err := sender(egCtx, flagsConfig.Address, flagsConfig.HashKey, publicKey,
+				flagsConfig.ReportInterval, unitedCh)
+			return err
+		})
 	}
 
 	if err := eg.Wait(); err != nil {

@@ -62,11 +62,18 @@ func sender(ctx context.Context,
 	key string,
 	pk *rsa.PublicKey,
 	d time.Duration,
-	inCh <-chan []byte) {
+	inCh <-chan []byte) error {
 
-	for v := range inCh {
-		if err := reportMetrics(address, key, pk, v); err != nil {
-			slog.Any("error on reporting metrics", err)
+	for {
+		select {
+		case v := <-inCh:
+			if err := reportMetrics(address, key, pk, v); err != nil {
+				slog.Any("error on reporting metrics", err)
+			}
+
+		case <-ctx.Done():
+			return nil
+
 		}
 	}
 }

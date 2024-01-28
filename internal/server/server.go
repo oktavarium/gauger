@@ -1,7 +1,11 @@
 package server
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/oktavarium/go-gauger/internal/server/internal/flags"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver"
@@ -19,7 +23,12 @@ func Run() error {
 		return fmt.Errorf("error init logger: %w", err)
 	}
 
-	gs, err := gaugeserver.NewGaugerServer(flagsConfig.Address,
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	defer stop()
+
+	gs, err := gaugeserver.NewGaugerServer(
+		ctx,
+		flagsConfig.Address,
 		flagsConfig.FilePath,
 		flagsConfig.Restore,
 		flagsConfig.StoreInterval,
