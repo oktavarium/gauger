@@ -84,6 +84,7 @@ func NewGaugerServer(
 
 // ListenAndServer - запуск сервиса
 func (g *GaugerServer) ListenAndServe() error {
+	idleConnsClosed := make(chan struct{})
 	go func() {
 		<-g.ctx.Done()
 		if err := g.srv.Shutdown(context.Background()); err != nil {
@@ -91,12 +92,13 @@ func (g *GaugerServer) ListenAndServe() error {
 				zap.String("func", "ListenAndServer"),
 				zap.Error(err))
 		}
-
+		idleConnsClosed <- struct{}{}
 	}()
 
 	if err := g.srv.ListenAndServe(); err != http.ErrServerClosed {
 		return fmt.Errorf("error on listen and serve: %w", err)
 	}
+	<-idleConnsClosed
 
 	return nil
 }
