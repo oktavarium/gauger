@@ -18,6 +18,7 @@ import (
 // Run - запускает агент сбора и отправки метрик на сервер
 func Run() error {
 	flagsConfig, err := flags.LoadConfig()
+	fmt.Printf("%+v", flagsConfig)
 	if err != nil {
 		return fmt.Errorf("error on loading config: %w", err)
 	}
