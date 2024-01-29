@@ -7,11 +7,11 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/oktavarium/go-gauger/internal/agent/internal/logger"
 	"github.com/oktavarium/go-gauger/internal/shared"
 )
 
@@ -70,7 +70,7 @@ func sender(ctx context.Context,
 		select {
 		case v := <-inCh:
 			if err := reportMetrics(address, key, pk, v); err != nil {
-				slog.Any("error on reporting metrics", err)
+				logger.LogError("error on reporting metrics", err)
 			}
 
 		case <-ctx.Done():

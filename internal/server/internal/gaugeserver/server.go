@@ -18,9 +18,8 @@ import (
 
 // GaugeServer - управляющий сервис для сбора метрик
 type GaugerServer struct {
-	ctx    context.Context
-	router *chi.Mux
-	srv    *http.Server
+	ctx context.Context
+	srv *http.Server
 }
 
 // NewGaugeServer - конструктор сервиса ядл сбора метрик
@@ -33,11 +32,8 @@ func NewGaugerServer(
 	dsn string,
 	key string,
 	pkFile string) (*GaugerServer, error) {
-	server := &GaugerServer{
-		ctx:    ctx,
-		router: chi.NewRouter(),
-	}
 
+	router := chi.NewRouter()
 	var s storage.Storage
 	var err error
 
@@ -57,26 +53,29 @@ func NewGaugerServer(
 		if err != nil {
 			return nil, fmt.Errorf("error on creating cipher: %w", err)
 		}
-		server.router.Use(c.CipherMiddleware)
+		router.Use(c.CipherMiddleware)
 	}
 
-	server.router.Use(logger.LoggerMiddleware)
+	router.Use(logger.LoggerMiddleware)
 	if len(key) != 0 {
-		server.router.Use(hash.HashMiddleware([]byte(key)))
+		router.Use(hash.HashMiddleware([]byte(key)))
 	}
 
-	server.router.Use(gzip.GzipMiddleware)
-	server.router.Get("/", handler.GetHandle)
-	server.router.Get("/ping", handler.PingHandle)
-	server.router.Post("/update/", handler.UpdateJSONHandle)
-	server.router.Post("/updates/", handler.UpdatesHandle)
-	server.router.Post("/value/", handler.ValueJSONHandle)
-	server.router.Post("/update/{type}/{name}/{value}", handler.UpdateHandle)
-	server.router.Get("/value/{type}/{name}", handler.ValueHandle)
+	router.Use(gzip.GzipMiddleware)
+	router.Get("/", handler.GetHandle)
+	router.Get("/ping", handler.PingHandle)
+	router.Post("/update/", handler.UpdateJSONHandle)
+	router.Post("/updates/", handler.UpdatesHandle)
+	router.Post("/value/", handler.ValueJSONHandle)
+	router.Post("/update/{type}/{name}/{value}", handler.UpdateHandle)
+	router.Get("/value/{type}/{name}", handler.ValueHandle)
 
-	server.srv = &http.Server{
-		Addr:    addr,
-		Handler: server.router,
+	server := &GaugerServer{
+		ctx: ctx,
+		srv: &http.Server{
+			Addr:    addr,
+			Handler: router,
+		},
 	}
 
 	return server, nil
@@ -98,6 +97,7 @@ func (g *GaugerServer) ListenAndServe() error {
 	if err := g.srv.ListenAndServe(); err != http.ErrServerClosed {
 		return fmt.Errorf("error on listen and serve: %w", err)
 	}
+
 	<-idleConnsClosed
 
 	return nil

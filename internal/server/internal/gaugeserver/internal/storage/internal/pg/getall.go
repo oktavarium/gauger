@@ -22,7 +22,7 @@ func (s *storage) GetAll(ctx context.Context) ([]byte, error) {
 
 	for rows.Next() {
 		m := shared.NewEmptyGaugeMetric()
-		if err = rows.Scan(&m.ID, m.Value); err != nil {
+		if err = rows.Scan(&m.ID, &m.Value); err != nil {
 			return nil, fmt.Errorf("error occured on scanning gauge: %w", err)
 		}
 		allMetrics = append(allMetrics, m)
@@ -40,7 +40,7 @@ func (s *storage) GetAll(ctx context.Context) ([]byte, error) {
 
 	for rows.Next() {
 		m := shared.NewEmptyCounterMetric()
-		if err = rows.Scan(&m.ID, m.Delta); err != nil {
+		if err = rows.Scan(&m.ID, &m.Delta); err != nil {
 			return nil, fmt.Errorf("error occured on scanning counter: %w", err)
 		}
 		allMetrics = append(allMetrics, m)

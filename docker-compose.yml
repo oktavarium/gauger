@@ -34,8 +34,8 @@ services:
     build:
       context: .
       dockerfile: cmd/agent/Dockerfile
-    env_file: .env
+  #  env_file: .env
     environment:
-      - ADDRESS=gaugeserver$ADDRESS
+      - ADDRESS=gaugeserver:$ADDRESS
 
 
