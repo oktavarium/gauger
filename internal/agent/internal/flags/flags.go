@@ -3,6 +3,7 @@ package flags
 import (
 	"errors"
 	"flag"
+	"strings"
 	"time"
 
 	"github.com/oktavarium/go-gauger/internal/agent/internal/logger"
@@ -48,7 +49,9 @@ func LoadConfig() (Config, error) {
 	config.PollInterval = time.Duration(config.PollIntervalInt) * time.Second
 	config.ReportInterval = time.Duration(config.ReportIntervalInt) * time.Second
 
-	config.Address = "http://" + config.Address
+	if !strings.HasPrefix(config.Address, "http://") {
+		config.Address = "http://" + config.Address
+	}
 
 	return config, nil
 }
