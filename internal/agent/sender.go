@@ -21,7 +21,6 @@ func reportMetrics(address string, key string, pk *rsa.PublicKey, metrics []byte
 	var err error
 	endpoint := fmt.Sprintf("%s/%s/", address, updatePath)
 	var metricsResponse shared.Metric
-
 	client := resty.New()
 	request := client.R().
 		SetHeader("Content-Type", "application/json").
@@ -76,7 +75,6 @@ func sender(ctx context.Context,
 
 		case <-ctx.Done():
 			return nil
-
 		}
 	}
 }

@@ -3,7 +3,6 @@ package flags
 import (
 	"errors"
 	"flag"
-	"fmt"
 	"time"
 
 	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
@@ -46,6 +45,6 @@ func LoadConfig() (Config, error) {
 	if config.StoreInterval == 0 && config.StoreIntervalInt != 0 {
 		config.StoreInterval = time.Duration(config.StoreIntervalInt) * time.Second
 	}
-	fmt.Println(config)
+
 	return config, nil
 }

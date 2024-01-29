@@ -10,7 +10,6 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"time"
 
 	"github.com/oktavarium/go-gauger/internal/agent/internal/flags"
 	"golang.org/x/sync/errgroup"
@@ -48,11 +47,15 @@ func Run() error {
 	chMetrics := collector(
 		egCtx,
 		readMetrics,
-		eg, time.Duration(flagsConfig.PollInterval))
+		eg,
+		flagsConfig.PollInterval,
+	)
 	chPsMetrics := collector(
 		egCtx,
 		readPsMetrics,
-		eg, time.Duration(flagsConfig.PollInterval))
+		eg,
+		flagsConfig.PollInterval,
+	)
 
 	unitedCh := fanIn(chMetrics, chPsMetrics)
 	for i := 0; i < flagsConfig.RateLimit; i++ {
