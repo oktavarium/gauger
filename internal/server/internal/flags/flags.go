@@ -26,12 +26,12 @@ type Config struct {
 // loadConfig - загружает конфигурацию - из флагов и переменных окружения
 func LoadConfig() (Config, error) {
 	var config Config
+	config.parseCli()
 	if err := config.loadEnv(); err != nil {
 		logger.Logger().Error("error",
 			zap.String("func", "LoadConfig"),
 			zap.Error(err))
 	}
-	config.parseCli()
 	if err := config.parseConfigFile(config.Config); err != nil {
 		logger.Logger().Error("error",
 			zap.String("func", "LoadConfig"),
