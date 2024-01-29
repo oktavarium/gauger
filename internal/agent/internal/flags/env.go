@@ -11,7 +11,7 @@ func (c *Config) loadEnv() error {
 	if err := env.Parse(&config); err != nil {
 		return fmt.Errorf("error on parsing env parameters: %w", err)
 	}
-
+	fmt.Printf("%+v", config)
 	if len(config.Address) != 0 {
 		c.Address = config.Address
 	}
