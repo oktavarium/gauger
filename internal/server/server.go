@@ -15,7 +15,6 @@ import (
 // Run - запускает сервис обработки метрик
 func Run() error {
 	flagsConfig, err := flags.LoadConfig()
-	fmt.Printf("%+v", flagsConfig)
 	if err != nil {
 		return fmt.Errorf("error on loading config: %w", err)
 	}
