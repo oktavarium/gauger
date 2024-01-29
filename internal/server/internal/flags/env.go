@@ -12,7 +12,37 @@ func (c *Config) loadEnv() error {
 		return fmt.Errorf("error on parsing env parameters: %w", err)
 	}
 
-	c.compare(config)
+	if len(config.Address) != 0 {
+		c.Address = config.Address
+	}
+
+	if len(config.LogLevel) != 0 {
+		c.LogLevel = config.LogLevel
+	}
+
+	if len(config.FilePath) != 0 {
+		c.FilePath = config.FilePath
+	}
+
+	if len(config.DatabaseDSN) != 0 {
+		c.DatabaseDSN = config.DatabaseDSN
+	}
+
+	if len(config.HashKey) != 0 {
+		c.HashKey = config.HashKey
+	}
+
+	if len(config.CryptoKey) != 0 {
+		c.CryptoKey = config.CryptoKey
+	}
+
+	if config.StoreIntervalInt != 0 {
+		c.StoreIntervalInt = config.StoreIntervalInt
+	}
+
+	if config.StoreInterval != 0 {
+		c.StoreInterval = config.StoreInterval
+	}
 
 	return nil
 }
