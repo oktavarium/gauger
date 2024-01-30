@@ -1,7 +1,7 @@
 run:
 	docker-compose up --build --abort-on-container-exit
 cover:
-	go test ./... -coverprofile cover.out && go tool cover -func cover.out
+	go test -count=1 ./... -coverprofile cover.out && go tool cover -func cover.out
 clean:
 	rm cover.out && rm agent && rm server
 build:
