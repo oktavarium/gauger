@@ -1,6 +1,7 @@
 package gaugeserver
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"testing"
@@ -19,7 +20,12 @@ func TestRouter(t *testing.T) {
 	server, err := NewGaugerServer("localhost:8088", "temp.txt", true, 1*time.Minute, "", "cxvxv")
 	require.NoError(t, err)
 
-	go server.ListenAndServe()
+	go func() {
+		if err := server.ListenAndServe(); err != nil {
+			panic(fmt.Errorf("error on running server: %w", err))
+		}
+	}()
+
 	time.Sleep(5 * time.Second)
 	tests := []struct {
 		name   string
@@ -48,7 +54,11 @@ func TestRouter(t *testing.T) {
 		require.NoError(t, err)
 
 		// resp, get := testRequest(t, ts, test.method, test.url)
-		defer resp.Body.Close()
+		defer func() {
+			err = resp.Body.Close()
+			require.NoError(t, err)
+		}()
+
 		respBody, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
 		require.Equal(t, test.status, resp.StatusCode, test.name)

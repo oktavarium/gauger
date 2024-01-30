@@ -14,7 +14,7 @@ func Run() error {
 		return fmt.Errorf("error on loading config: %w", err)
 	}
 
-	if err := logger.Init(flagsConfig.LogLevel); err != nil {
+	if err = logger.Init(flagsConfig.LogLevel); err != nil {
 		return fmt.Errorf("error init logger: %w", err)
 	}
 
