@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -83,22 +84,23 @@ func NewGaugerServer(
 
 // ListenAndServer - запуск сервиса
 func (g *GaugerServer) ListenAndServe() error {
-	idleConnsClosed := make(chan struct{})
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		<-g.ctx.Done()
 		if err := g.srv.Shutdown(context.Background()); err != nil {
 			logger.Logger().Error("error",
 				zap.String("func", "ListenAndServer"),
 				zap.Error(err))
 		}
-		idleConnsClosed <- struct{}{}
 	}()
 
 	if err := g.srv.ListenAndServe(); err != http.ErrServerClosed {
 		return fmt.Errorf("error on listen and serve: %w", err)
 	}
 
-	<-idleConnsClosed
+	wg.Wait()
 
 	return nil
 }

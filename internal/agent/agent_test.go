@@ -104,5 +104,5 @@ func TestLoadConfig(t *testing.T) {
 	require.Equal(t, "", cfg.HashKey)
 	require.Equal(t, 2*time.Second, cfg.PollInterval)
 	require.Equal(t, 1, cfg.RateLimit)
-	require.Equal(t, 2*time.Second, cfg.ReportInterval)
+	require.Equal(t, 5*time.Second, cfg.ReportInterval)
 }
