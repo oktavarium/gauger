@@ -22,6 +22,7 @@ type storage struct {
 }
 
 func NewStorage(
+	ctx context.Context,
 	filename string,
 	restore bool,
 	timeout time.Duration,
@@ -46,12 +47,25 @@ func NewStorage(
 	if !s.sync {
 		go func() {
 			ticker := time.NewTicker(timeout)
-			for range ticker.C {
-				if err := s.save(); err != nil {
-					logger.Logger().Error("error",
-						zap.String("func", "NewStorage"),
-						zap.Error(err),
-					)
+			defer ticker.Stop()
+
+			for {
+				select {
+				case <-ticker.C:
+					if err := s.save(); err != nil {
+						logger.Logger().Error("error",
+							zap.String("func", "NewStorage"),
+							zap.Error(err),
+						)
+					}
+				case <-ctx.Done():
+					if err := s.save(); err != nil {
+						logger.Logger().Error("error",
+							zap.String("func", "NewStorage"),
+							zap.Error(err),
+						)
+					}
+					return
 				}
 			}
 		}()

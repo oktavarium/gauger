@@ -126,6 +126,7 @@ func collector(
 				if err != nil {
 					return err
 				}
+
 				chOut <- packedMatrics
 			case <-ctx.Done():
 				return nil

@@ -34,5 +34,8 @@ func printBuildInfo() {
 
 	fmt.Printf(
 		"Build version: %s\n Build data: %s\n Build commit: %s\n",
-		buildVersion, buildDate, buildCommit)
+		buildVersion,
+		buildDate,
+		buildCommit,
+	)
 }

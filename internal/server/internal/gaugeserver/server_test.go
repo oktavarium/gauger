@@ -1,6 +1,7 @@
 package gaugeserver
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,13 +12,13 @@ import (
 )
 
 func TestNewGaugeServer(t *testing.T) {
-	_, err := NewGaugerServer(":8080", "tmp.file", false, 1*time.Minute, "", "key")
+	_, err := NewGaugerServer(context.Background(), ":8080", "tmp.file", false, 1*time.Minute, "", "key", "")
 
 	require.NoError(t, err)
 }
 
 func TestRouter(t *testing.T) {
-	server, err := NewGaugerServer("localhost:8088", "temp.txt", true, 1*time.Minute, "", "cxvxv")
+	server, err := NewGaugerServer(context.Background(), "localhost:8088", "temp.txt", true, 1*time.Minute, "", "cxvxv", "")
 	require.NoError(t, err)
 
 	go func() {

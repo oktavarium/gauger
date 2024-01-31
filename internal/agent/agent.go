@@ -2,35 +2,68 @@ package agent
 
 import (
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
+	"os"
+	"os/signal"
 	"sync"
-	"time"
+	"syscall"
 
+	"github.com/oktavarium/go-gauger/internal/agent/internal/flags"
 	"golang.org/x/sync/errgroup"
 )
 
 // Run - запускает агент сбора и отправки метрик на сервер
 func Run() error {
-	flagsConfig, err := loadConfig()
+	flagsConfig, err := flags.LoadConfig()
 	if err != nil {
 		return fmt.Errorf("error on loading config: %w", err)
 	}
 
-	eg, egCtx := errgroup.WithContext(context.Background())
+	var publicKey *rsa.PublicKey
+	if len(flagsConfig.CryptoKey) != 0 {
+		publicKeyData, err := os.ReadFile(flagsConfig.CryptoKey)
+		if err != nil {
+			return fmt.Errorf("error on reading public key file: %w", err)
+		}
+
+		pkPEM, _ := pem.Decode(publicKeyData)
+		if pkPEM.Type != "RSA PUBLIC KEY" {
+			return fmt.Errorf("wrong key type: %w", err)
+		}
+
+		publicKey, err = x509.ParsePKCS1PublicKey(pkPEM.Bytes)
+		if err != nil {
+			return fmt.Errorf("error parsing public key: %w", err)
+		}
+	}
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	defer stop()
+	eg, egCtx := errgroup.WithContext(ctx)
 
 	chMetrics := collector(
 		egCtx,
 		readMetrics,
-		eg, time.Duration(flagsConfig.PollInterval))
+		eg,
+		flagsConfig.PollInterval,
+	)
 	chPsMetrics := collector(
 		egCtx,
 		readPsMetrics,
-		eg, time.Duration(flagsConfig.PollInterval))
+		eg,
+		flagsConfig.PollInterval,
+	)
 
 	unitedCh := fanIn(chMetrics, chPsMetrics)
 	for i := 0; i < flagsConfig.RateLimit; i++ {
-		go sender(egCtx, flagsConfig.Address, flagsConfig.HashKey,
-			flagsConfig.ReportInterval, unitedCh)
+		eg.Go(func() error {
+			err := sender(egCtx, flagsConfig.Address, flagsConfig.HashKey, publicKey,
+				flagsConfig.ReportInterval, unitedCh)
+			return err
+		})
 	}
 
 	if err := eg.Wait(); err != nil {

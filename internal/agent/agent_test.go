@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/oktavarium/go-gauger/internal/agent/internal/flags"
 	"github.com/oktavarium/go-gauger/internal/shared"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/sync/errgroup"
@@ -97,7 +98,7 @@ func TestCollector(t *testing.T) {
 }
 
 func TestLoadConfig(t *testing.T) {
-	cfg, err := loadConfig()
+	cfg, err := flags.LoadConfig()
 	require.NoError(t, err)
 	require.Equal(t, "http://localhost:8080", cfg.Address)
 	require.Equal(t, "", cfg.HashKey)
