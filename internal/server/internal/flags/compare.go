@@ -33,4 +33,8 @@ func (c *Config) compare(another Config) {
 	if c.StoreInterval == 0 && another.StoreInterval != 0 {
 		c.StoreInterval = another.StoreInterval
 	}
+
+	if len(c.TrustedSubnet) == 0 && len(another.TrustedSubnet) != 0 {
+		c.TrustedSubnet = another.TrustedSubnet
+	}
 }

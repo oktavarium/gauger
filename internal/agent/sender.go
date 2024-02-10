@@ -17,7 +17,13 @@ import (
 
 const updatePath string = "updates"
 
-func reportMetrics(address string, key string, pk *rsa.PublicKey, metrics []byte) error {
+func reportMetrics(
+	address string,
+	key string,
+	pk *rsa.PublicKey,
+	metrics []byte,
+	localAddr string,
+) error {
 	var err error
 	endpoint := fmt.Sprintf("%s/%s/", address, updatePath)
 	var metricsResponse shared.Metric
@@ -25,7 +31,8 @@ func reportMetrics(address string, key string, pk *rsa.PublicKey, metrics []byte
 	request := client.R().
 		SetHeader("Content-Type", "application/json").
 		SetHeader("Content-Encoding", "gzip").
-		SetHeader("Accept-Encoding", "gzip")
+		SetHeader("Accept-Encoding", "gzip").
+		SetHeader("X-Real-IP", localAddr)
 
 	if len(key) != 0 {
 		hash, err := hashData([]byte(key), metrics)
@@ -66,10 +73,15 @@ func sender(ctx context.Context,
 	d time.Duration,
 	inCh <-chan []byte) error {
 
+	localAddr, err := getLocalIp()
+	if err != nil {
+		logger.LogError("error on getting local ip: %w", err)
+	}
+
 	for {
 		select {
 		case v := <-inCh:
-			if err := reportMetrics(address, key, pk, v); err != nil {
+			if err := reportMetrics(address, key, pk, v, localAddr); err != nil {
 				logger.LogError("error on reporting metrics", err)
 			}
 

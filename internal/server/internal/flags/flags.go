@@ -21,6 +21,7 @@ type Config struct {
 	HashKey          string        `env:"KEY"`                                 // ключ аутентификации
 	CryptoKey        string        `env:"CRYPTO_KEY" json:"crypto_key"`        // файл с приватным ключом сервера
 	Config           string        `env:"CONFIG"`                              // файл с конфигурацией
+	TrustedSubnet    string        `env:"TRUSTE_SUBNET" json:"trusted_subnet"` // доверенная сеть
 }
 
 // loadConfig - загружает конфигурацию - из флагов и переменных окружения

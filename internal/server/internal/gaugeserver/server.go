@@ -12,6 +12,7 @@ import (
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/gzip"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/handlers"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/hash"
+	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/ipsec"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage"
 	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
 	"go.uber.org/zap"
@@ -32,7 +33,9 @@ func NewGaugerServer(
 	timeout time.Duration,
 	dsn string,
 	key string,
-	pkFile string) (*GaugerServer, error) {
+	pkFile string,
+	subnet string,
+) (*GaugerServer, error) {
 
 	router := chi.NewRouter()
 	var s storage.Storage
@@ -57,11 +60,16 @@ func NewGaugerServer(
 		router.Use(c.CipherMiddleware)
 	}
 
+	sec, err := ipsec.NewIpSec(subnet)
+	if err != nil {
+		return nil, fmt.Errorf("error on creating ipsec: %w", err)
+	}
+
 	router.Use(logger.LoggerMiddleware)
+	router.Use(sec.IpSecMiddleware)
 	if len(key) != 0 {
 		router.Use(hash.HashMiddleware([]byte(key)))
 	}
-
 	router.Use(gzip.GzipMiddleware)
 	router.Get("/", handler.GetHandle)
 	router.Get("/ping", handler.PingHandle)

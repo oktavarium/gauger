@@ -34,7 +34,8 @@ func Run() error {
 		flagsConfig.StoreInterval,
 		flagsConfig.DatabaseDSN,
 		flagsConfig.HashKey,
-		flagsConfig.CryptoKey)
+		flagsConfig.CryptoKey,
+		flagsConfig.TrustedSubnet)
 	if err != nil {
 		return fmt.Errorf("error on creating gaugeserver: %w", err)
 	}

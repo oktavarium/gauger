@@ -44,5 +44,9 @@ func (c *Config) loadEnv() error {
 		c.StoreInterval = config.StoreInterval
 	}
 
+	if len(config.TrustedSubnet) != 0 {
+		c.TrustedSubnet = config.TrustedSubnet
+	}
+
 	return nil
 }
