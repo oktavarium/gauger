@@ -77,7 +77,7 @@ func sender(ctx context.Context,
 	key string,
 	pk *rsa.PublicKey,
 	d time.Duration,
-	inCh <-chan []byte) error {
+	inCh <-chan []shared.Metric) error {
 
 	localAddr, err := getLocalIp()
 	if err != nil {
@@ -100,11 +100,20 @@ func sender(ctx context.Context,
 		select {
 		case v := <-inCh:
 			if !useGrpc {
-				if err := reportMetrics(address, key, pk, v, localAddr); err != nil {
+				compressedMetrics, err := compressMetrics(v)
+				if err != nil {
+					logger.LogError("error on compressing metrics", err)
+					continue
+				}
+				if err := reportMetrics(address, key, pk, compressedMetrics, localAddr); err != nil {
 					logger.LogError("error on reporting metrics", err)
 				}
 			} else {
-				if _, err := grpcClient.Updates(ctx); err != nil {
+				req := &pbapi.UpdatesRequest{
+					Metrics: pbapi.ConvertDBMetricsToMetrics(v),
+				}
+
+				if _, err := grpcClient.Updates(ctx, req); err != nil {
 					logger.LogError("error on reporting metrics by grpc", err)
 				}
 			}
