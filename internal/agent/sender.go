@@ -13,6 +13,10 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/oktavarium/go-gauger/internal/agent/internal/logger"
 	"github.com/oktavarium/go-gauger/internal/shared"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
+	pbapi "github.com/oktavarium/go-gauger/api"
 )
 
 const updatePath string = "updates"
@@ -68,6 +72,8 @@ func reportMetrics(
 
 func sender(ctx context.Context,
 	address string,
+	grpcAddress string,
+	useGrpc bool,
 	key string,
 	pk *rsa.PublicKey,
 	d time.Duration,
@@ -78,11 +84,29 @@ func sender(ctx context.Context,
 		logger.LogError("error on getting local ip: %w", err)
 	}
 
+	var grpcClient pbapi.GaugerClient
+	if useGrpc {
+		conn, err := grpc.Dial(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			logger.LogError("error on dialing grpc", err)
+			useGrpc = false
+		} else {
+			defer conn.Close()
+			grpcClient = pbapi.NewGaugerClient(conn)
+		}
+	}
+
 	for {
 		select {
 		case v := <-inCh:
-			if err := reportMetrics(address, key, pk, v, localAddr); err != nil {
-				logger.LogError("error on reporting metrics", err)
+			if !useGrpc {
+				if err := reportMetrics(address, key, pk, v, localAddr); err != nil {
+					logger.LogError("error on reporting metrics", err)
+				}
+			} else {
+				if _, err := grpcClient.Updates(ctx); err != nil {
+					logger.LogError("error on reporting metrics by grpc", err)
+				}
 			}
 
 		case <-ctx.Done():

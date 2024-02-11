@@ -37,4 +37,8 @@ func (c *Config) compare(another Config) {
 	if len(c.TrustedSubnet) == 0 && len(another.TrustedSubnet) != 0 {
 		c.TrustedSubnet = another.TrustedSubnet
 	}
+
+	if len(c.GrpcAddress) == 0 && len(another.GrpcAddress) != 0 {
+		c.GrpcAddress = another.GrpcAddress
+	}
 }

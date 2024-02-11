@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/cipher"
+	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/grpcserver"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/gzip"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/handlers"
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/hash"
@@ -16,18 +17,21 @@ import (
 	"github.com/oktavarium/go-gauger/internal/server/internal/gaugeserver/internal/storage"
 	"github.com/oktavarium/go-gauger/internal/server/internal/logger"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 // GaugeServer - управляющий сервис для сбора метрик
 type GaugerServer struct {
-	ctx context.Context
-	srv *http.Server
+	ctx  context.Context
+	srv  *http.Server
+	grpc *grpcserver.GrpcServer
 }
 
 // NewGaugeServer - конструктор сервиса ядл сбора метрик
 func NewGaugerServer(
 	ctx context.Context,
 	addr string,
+	grpcAddr string,
 	filename string,
 	restore bool,
 	timeout time.Duration,
@@ -85,6 +89,7 @@ func NewGaugerServer(
 			Addr:    addr,
 			Handler: router,
 		},
+		grpc: grpcserver.NewGrpcServer(grpcAddr, s),
 	}
 
 	return server, nil
@@ -102,9 +107,15 @@ func (g *GaugerServer) ListenAndServe() error {
 				zap.String("func", "ListenAndServer"),
 				zap.Error(err))
 		}
+
+		g.grpc.Shutdown()
 	}()
 
-	if err := g.srv.ListenAndServe(); err != http.ErrServerClosed {
+	eg := errgroup.Group{}
+	eg.Go(g.grpc.ListenAndServe)
+	eg.Go(g.srv.ListenAndServe)
+
+	if err := eg.Wait(); err != nil {
 		return fmt.Errorf("error on listen and serve: %w", err)
 	}
 

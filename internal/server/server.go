@@ -29,6 +29,7 @@ func Run() error {
 	gs, err := gaugeserver.NewGaugerServer(
 		ctx,
 		flagsConfig.Address,
+		flagsConfig.GrpcAddress,
 		flagsConfig.FilePath,
 		flagsConfig.Restore,
 		flagsConfig.StoreInterval,

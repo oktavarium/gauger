@@ -48,5 +48,9 @@ func (c *Config) loadEnv() error {
 		c.TrustedSubnet = config.TrustedSubnet
 	}
 
+	if len(config.GrpcAddress) != 0 {
+		c.GrpcAddress = config.GrpcAddress
+	}
+
 	return nil
 }

@@ -60,8 +60,15 @@ func Run() error {
 	unitedCh := fanIn(chMetrics, chPsMetrics)
 	for i := 0; i < flagsConfig.RateLimit; i++ {
 		eg.Go(func() error {
-			err := sender(egCtx, flagsConfig.Address, flagsConfig.HashKey, publicKey,
-				flagsConfig.ReportInterval, unitedCh)
+			err := sender(
+				egCtx,
+				flagsConfig.Address,
+				flagsConfig.GrpcAddress,
+				flagsConfig.UseGRPC,
+				flagsConfig.HashKey,
+				publicKey,
+				flagsConfig.ReportInterval,
+				unitedCh)
 			return err
 		})
 	}
