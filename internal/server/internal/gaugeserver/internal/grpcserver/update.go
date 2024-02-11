@@ -11,16 +11,16 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (server *GrpcServer) Update(ctx context.Context, in *pbapi.UpdateRequest) (*emptypb.Empty, error) {
+func (s *GrpcServer) Update(ctx context.Context, in *pbapi.UpdateRequest) (*emptypb.Empty, error) {
 	switch in.GetMetric().Type {
 	case shared.GaugeType:
-		err := server.storage.SaveGauge(ctx, in.GetMetric().GetId(), in.GetMetric().GetValue())
+		err := s.storage.SaveGauge(ctx, in.GetMetric().GetId(), in.GetMetric().GetValue())
 		if err != nil {
 			return &emptypb.Empty{}, status.Errorf(codes.Internal, fmt.Sprintf("error of saving gauge: %s", err))
 		}
 
 	case shared.CounterType:
-		_, err := server.storage.UpdateCounter(ctx, in.GetMetric().GetId(), int64(in.GetMetric().GetValue()))
+		_, err := s.storage.UpdateCounter(ctx, in.GetMetric().GetId(), int64(in.GetMetric().GetValue()))
 		if err != nil {
 			return &emptypb.Empty{}, status.Errorf(codes.Internal, fmt.Sprintf("error of saving counter: %s", err))
 		}

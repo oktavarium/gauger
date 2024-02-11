@@ -9,17 +9,17 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (server *GrpcServer) Get(ctx context.Context, in *pbapi.GetRequest) (*pbapi.GetResponse, error) {
+func (s *GrpcServer) Get(ctx context.Context, in *pbapi.GetRequest) (*pbapi.GetResponse, error) {
 	resp := &pbapi.GetResponse{}
 	switch in.GetType() {
 	case shared.GaugeType:
-		value, ok := server.storage.GetGauger(ctx, in.GetName())
+		value, ok := s.storage.GetGauger(ctx, in.GetName())
 		if !ok {
 			return resp, status.Errorf(codes.NotFound, "value not found")
 		}
 		resp.Value = value
 	case shared.CounterType:
-		value, ok := server.storage.GetCounter(ctx, in.GetName())
+		value, ok := s.storage.GetCounter(ctx, in.GetName())
 		if !ok {
 			return resp, status.Errorf(codes.NotFound, "value not found")
 		}
