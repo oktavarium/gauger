@@ -64,13 +64,13 @@ func NewGaugerServer(
 		router.Use(c.CipherMiddleware)
 	}
 
-	sec, err := ipsec.NewIpSec(subnet)
+	sec, err := ipsec.NewIPSec(subnet)
 	if err != nil {
 		return nil, fmt.Errorf("error on creating ipsec: %w", err)
 	}
 
 	router.Use(logger.LoggerMiddleware)
-	router.Use(sec.IpSecMiddleware)
+	router.Use(sec.IPSecMiddleware)
 	if len(key) != 0 {
 		router.Use(hash.HashMiddleware([]byte(key)))
 	}

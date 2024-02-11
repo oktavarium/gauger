@@ -5,11 +5,11 @@ import (
 	"net"
 )
 
-func getLocalIp() (string, error) {
-	var localIp string
+func getLocalIP() (string, error) {
+	var localIP string
 	ifaces, err := net.Interfaces()
 	if err != nil {
-		return localIp, fmt.Errorf("error on getting local ip: %w", err)
+		return localIP, fmt.Errorf("error on getting local ip: %w", err)
 	}
 
 	for _, i := range ifaces {
@@ -21,5 +21,5 @@ func getLocalIp() (string, error) {
 		}
 	}
 
-	return localIp, nil
+	return localIP, nil
 }

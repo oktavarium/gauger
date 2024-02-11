@@ -79,7 +79,7 @@ func sender(ctx context.Context,
 	d time.Duration,
 	inCh <-chan []shared.Metric) error {
 
-	localAddr, err := getLocalIp()
+	localAddr, err := getLocalIP()
 	if err != nil {
 		logger.LogError("error on getting local ip: %w", err)
 	}

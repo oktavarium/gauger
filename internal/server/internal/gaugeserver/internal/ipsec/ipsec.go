@@ -13,7 +13,7 @@ type securityProvider struct {
 	trustedSubnet *net.IPNet
 }
 
-func NewIpSec(subnet string) (securityProvider, error) {
+func NewIPSec(subnet string) (securityProvider, error) {
 	if len(subnet) == 0 {
 		return securityProvider{
 			trustedSubnet: nil,
@@ -30,16 +30,16 @@ func NewIpSec(subnet string) (securityProvider, error) {
 	}, nil
 }
 
-// IpSecMiddleware - метод проверки доверенных сетей клиентов
-func (sec securityProvider) IpSecMiddleware(next http.Handler) http.Handler {
+// IPSecMiddleware - метод проверки доверенных сетей клиентов
+func (sec securityProvider) IPSecMiddleware(next http.Handler) http.Handler {
 	hf := func(w http.ResponseWriter, r *http.Request) {
 		if sec.trustedSubnet != nil {
-			clientIp := r.Header.Get("X-Real-IP")
-			if len(clientIp) != 0 {
-				ipaddr, _, err := net.ParseCIDR(clientIp)
+			clientIP := r.Header.Get("X-Real-IP")
+			if len(clientIP) != 0 {
+				ipaddr, _, err := net.ParseCIDR(clientIP)
 				if err != nil {
 					logger.Logger().Error("error",
-						zap.String("func", "ipSecMiddleware"),
+						zap.String("func", "IPSecMiddleware"),
 						zap.Error(err))
 
 					w.WriteHeader(http.StatusBadRequest)
