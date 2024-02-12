@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	pbapi "github.com/oktavarium/go-gauger/api"
+	"github.com/oktavarium/go-gauger/internal/shared"
 )
 
 func (s *GrpcServer) GetAll(ctx context.Context, _ *emptypb.Empty) (*pbapi.GetAllResponse, error) {
@@ -20,6 +21,6 @@ func (s *GrpcServer) GetAll(ctx context.Context, _ *emptypb.Empty) (*pbapi.GetAl
 		return resp, err
 	}
 
-	resp.Metrics = pbapi.ConvertDBMetricsToMetrics(allMetrics)
+	resp.Metrics = shared.ConvertDBMetricsToMetrics(allMetrics)
 	return resp, nil
 }

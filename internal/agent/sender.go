@@ -110,7 +110,7 @@ func sender(ctx context.Context,
 				}
 			} else {
 				req := &pbapi.UpdatesRequest{
-					Metrics: pbapi.ConvertDBMetricsToMetrics(v),
+					Metrics: shared.ConvertDBMetricsToMetrics(v),
 				}
 
 				if _, err := grpcClient.Updates(ctx, req); err != nil {

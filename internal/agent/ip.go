@@ -6,20 +6,37 @@ import (
 )
 
 func getLocalIP() (string, error) {
-	var localIP string
 	ifaces, err := net.Interfaces()
 	if err != nil {
-		return localIP, fmt.Errorf("error on getting local ip: %w", err)
+		return "", fmt.Errorf("error on getting interfaces: %w", err)
 	}
 
-	for _, i := range ifaces {
-		addrs, _ := i.Addrs()
+	for _, iface := range ifaces {
+		// Проверяем, что интерфейс активен и не является loopback
+		if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
+			continue // Интерфейс не активен или является loopback
+		}
+
+		addrs, err := iface.Addrs()
+		if err != nil {
+			continue // Пропускаем интерфейс, если возникла ошибка при получении адресов
+		}
+
 		for _, addr := range addrs {
-			if len(addr.String()) != 0 {
-				return addr.String(), nil
+			// Проверяем, что адрес является сетевым адресом IPv4
+			ipNet, ok := addr.(*net.IPNet)
+			if !ok || ipNet.IP.To4() == nil {
+				continue // Это не IPv4
 			}
+
+			// Исключаем локальный адрес обратной связи
+			if ipNet.IP.IsLoopback() {
+				continue
+			}
+
+			return ipNet.IP.String(), nil // Возвращаем первый подходящий адрес
 		}
 	}
 
-	return localIP, nil
+	return "", fmt.Errorf("local IP address not found")
 }
